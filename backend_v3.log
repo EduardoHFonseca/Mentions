@@ -1,0 +1,49 @@
+INFO:     Started server process [45659]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57044 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57046 - "GET /api/operator/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57058 - "GET /api/operator/clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57062 - "GET /api/operator/clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57072 - "GET /api/operator/clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45954 - "GET /api/operator/clients HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     91.196.152.35:35445 - "GET / HTTP/1.1" 200 OK
+INFO:     91.231.89.48:48329 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+INFO:     104.243.32.126:58094 - "GET / HTTP/1.1" 200 OK
+INFO:     104.243.32.126:58098 - "GET /api/tags HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:58102 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:58104 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:58118 - "GET /api/version HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:58130 - "GET /.well-known/mcp.json HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:35678 - "GET /queue/status HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:35682 - "GET /.well-known/agent.json HTTP/1.1" 404 Not Found
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+INFO:     104.243.32.126:43650 - "GET / HTTP/1.1" 200 OK
+INFO:     104.243.32.126:43658 - "GET /api/tags HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:43674 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:43650 - "GET /metrics HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:43688 - "GET /api/version HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:43698 - "GET /queue/status HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:43658 - "GET /.well-known/mcp.json HTTP/1.1" 404 Not Found
+INFO:     104.243.32.126:43650 - "GET /.well-known/agent.json HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [45659]

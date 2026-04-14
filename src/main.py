@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from typing import List, Optional
 from uuid import UUID
 import uvicorn
@@ -31,10 +31,40 @@ async def health_check():
 
 @app.post("/api/auth/login", response_model=schemas.UserResponse)
 def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == req.email).first()
+    user = db.query(models.User).filter(func.lower(models.User.email) == func.lower(req.email)).first()
     if not user or user.password_hash != req.password:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    
+    if user.status == "pending_approval":
+        raise HTTPException(status_code=403, detail="Sua conta está aguardando aprovação")
+    
+    if user.is_blocked_access:
+        raise HTTPException(status_code=403, detail="Seu acesso está bloqueado")
+        
     return user
+
+@app.post("/api/auth/register", response_model=schemas.UserResponse)
+def register_public(user_data: schemas.UserCreateByOperator, db: Session = Depends(get_db)):
+    # Check if user exists
+    email_lower = user_data.email.lower()
+    existing = db.query(models.User).filter(func.lower(models.User.email) == email_lower).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+    
+    db_user = models.User(
+        email=email_lower,
+        password_hash=user_data.password,
+        full_name=user_data.full_name,
+        company_name=user_data.company_name,
+        role="client",
+        status="pending_approval", # Force pending approval for public registration
+        credit_limit=0, # Initial credit 0
+        billing_info=user_data.billing_info
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 @app.get("/api/grid/channels", response_model=List[str])
 def get_channels(db: Session = Depends(get_db)):
@@ -71,23 +101,26 @@ def lookup_grid(
 
 # Monitoring Sets CRUD
 @app.post("/api/sets", response_model=schemas.MonitoringSetResponse)
-def create_monitoring_set(set_data: schemas.MonitoringSetCreate, db: Session = Depends(get_db)):
-    # ... (user logic remains)
-    user = db.query(models.User).filter(models.User.role == "client").first()
-    # ...
+def create_monitoring_set(set_data: schemas.MonitoringSetCreate, user_id: Optional[UUID] = Query(None), db: Session = Depends(get_db)):
+    if not user_id:
+        user = db.query(models.User).filter(models.User.role == "client").first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Nenhum usuário cliente encontrado")
+        effective_user_id = user.id
+    else:
+        effective_user_id = user_id
     
     # Calculate estimated minutes
     total_min = 0
     for r in set_data.rules:
-        # Simplified: end_time - start_time in minutes * days_of_week count
-        h1, m1, s1 = r.start_time.hour, r.start_time.minute, r.start_time.second
-        h2, m2, s2 = r.end_time.hour, r.end_time.minute, r.end_time.second
+        h1, m1 = r.start_time.hour, r.start_time.minute
+        h2, m2 = r.end_time.hour, r.end_time.minute
         duration = (h2*60 + m2) - (h1*60 + m1)
         if duration < 0: duration += 24*60 # Cross midnight
         total_min += duration * len(r.days_of_week)
 
     db_set = models.MonitoringSet(
-        user_id=user.id,
+        user_id=effective_user_id,
         name=set_data.name,
         search_terms=set_data.search_terms,
         status="stand_by",
@@ -95,7 +128,6 @@ def create_monitoring_set(set_data: schemas.MonitoringSetCreate, db: Session = D
         audience_data_enabled=set_data.audience_data_enabled,
         clip_context_seconds=set_data.clip_context_seconds
     )
-    # ...
     db.add(db_set)
     db.commit()
     db.refresh(db_set)
@@ -113,10 +145,15 @@ def create_monitoring_set(set_data: schemas.MonitoringSetCreate, db: Session = D
 
 # Report Config & History Endpoints
 @app.post("/api/reports/config", response_model=schemas.ReportConfigResponse)
-def create_report_config(config: schemas.ReportConfigCreate, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.role == "client").first()
+def create_report_config(config: schemas.ReportConfigCreate, user_id: Optional[UUID] = Query(None), db: Session = Depends(get_db)):
+    if not user_id:
+        user = db.query(models.User).filter(models.User.role == "client").first()
+        effective_user_id = user.id if user else None
+    else:
+        effective_user_id = user_id
+
     db_config = models.ReportConfig(
-        user_id=user.id,
+        user_id=effective_user_id,
         **config.model_dump()
     )
     db.add(db_config)
@@ -133,14 +170,22 @@ def get_report_history(set_id: UUID, db: Session = Depends(get_db)):
     return db.query(models.Report).filter(models.Report.monitoring_set_id == set_id).order_by(models.Report.generated_at.desc()).all()
 
 @app.get("/api/invoices", response_model=List[schemas.InvoiceResponse])
-def list_invoices(db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.role == "client").first()
-    if not user: return []
-    return db.query(models.Invoice).filter(models.Invoice.user_id == user.id).order_by(models.Invoice.due_date.desc()).all()
+def list_invoices(user_id: Optional[UUID] = Query(None), db: Session = Depends(get_db)):
+    if not user_id:
+        user = db.query(models.User).filter(models.User.role == "client").first()
+        effective_user_id = user.id if user else None
+    else:
+        effective_user_id = user_id
+        
+    if not effective_user_id: return []
+    return db.query(models.Invoice).filter(models.Invoice.user_id == effective_user_id).order_by(models.Invoice.due_date.desc()).all()
 
 @app.get("/api/sets", response_model=List[schemas.MonitoringSetResponse])
-def list_monitoring_sets(db: Session = Depends(get_db)):
-    return db.query(models.MonitoringSet).all()
+def list_monitoring_sets(user_id: Optional[UUID] = Query(None), db: Session = Depends(get_db)):
+    query = db.query(models.MonitoringSet)
+    if user_id:
+        query = query.filter(models.MonitoringSet.user_id == user_id)
+    return query.all()
 
 @app.put("/api/sets/{set_id}", response_model=schemas.MonitoringSetResponse)
 def update_monitoring_set(set_id: UUID, set_data: schemas.MonitoringSetUpdate, db: Session = Depends(get_db)):
@@ -148,7 +193,6 @@ def update_monitoring_set(set_id: UUID, set_data: schemas.MonitoringSetUpdate, d
     if not db_set:
         raise HTTPException(status_code=404, detail="Set not found")
     
-    # Update base fields
     db_set.name = set_data.name
     db_set.search_terms = set_data.search_terms
     db_set.audience_data_enabled = set_data.audience_data_enabled
@@ -156,11 +200,8 @@ def update_monitoring_set(set_id: UUID, set_data: schemas.MonitoringSetUpdate, d
     if set_data.status:
         db_set.status = set_data.status
 
-    # Update rules if provided
     if set_data.rules is not None:
-        # Delete old rules
         db.query(models.MonitoringRule).filter(models.MonitoringRule.monitoring_set_id == set_id).delete()
-        # Add new rules
         for rule_data in set_data.rules:
             db_rule = models.MonitoringRule(
                 monitoring_set_id=db_set.id,
@@ -224,9 +265,84 @@ def list_clients_for_operator(db: Session = Depends(get_db)):
             "is_blocked_access": c.is_blocked_access,
             "status": c.status,
             "active_sets_count": len(active_sets),
-            "total_minutes_estimate": total_min
+            "total_minutes_estimate": total_min,
+            "billing_info": c.billing_info
         })
     return results
+
+@app.post("/api/operator/user", response_model=schemas.UserResponse)
+def create_user_by_operator(user_data: schemas.UserCreateByOperator, db: Session = Depends(get_db)):
+    # Check if user exists
+    email_lower = user_data.email.lower()
+    existing = db.query(models.User).filter(func.lower(models.User.email) == email_lower).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+    
+    db_user = models.User(
+        email=email_lower,
+        password_hash=user_data.password,
+
+        full_name=user_data.full_name,
+        company_name=user_data.company_name,
+        role=user_data.role,
+        status=user_data.status,
+        credit_limit=user_data.credit_limit,
+        billing_info=user_data.billing_info
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.delete("/api/operator/user/{user_id}")
+def delete_user_by_operator(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    db.delete(user)
+    db.commit()
+    return {"status": "deleted"}
+
+@app.delete("/api/operator/user/{user_id}/sets")
+def delete_all_user_sets(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    # Delete all monitoring sets (cascading to rules and mentions)
+    db.query(models.MonitoringSet).filter(models.MonitoringSet.user_id == user_id).delete()
+    db.commit()
+    return {"status": "all sets deleted"}
+
+@app.patch("/api/operator/user/{user_id}")
+def update_user_details(user_id: UUID, update_data: schemas.UserUpdateByOperator, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user: raise HTTPException(status_code=404)
+    
+    if update_data.full_name is not None:
+        user.full_name = update_data.full_name
+    if update_data.company_name is not None:
+        user.company_name = update_data.company_name
+    if update_data.credit_limit is not None:
+        user.credit_limit = update_data.credit_limit
+    if update_data.is_blocked_access is not None:
+        user.is_blocked_access = update_data.is_blocked_access
+    if update_data.status is not None:
+        user.status = update_data.status
+    if update_data.password is not None:
+        user.password_hash = update_data.password
+    if update_data.role is not None:
+        user.role = update_data.role
+    if update_data.billing_info is not None:
+        if user.billing_info is None:
+            user.billing_info = update_data.billing_info
+        else:
+            current_info = dict(user.billing_info)
+            current_info.update(update_data.billing_info)
+            user.billing_info = current_info
+        
+    db.commit()
+    return {"status": "updated"}
 
 @app.get("/api/operator/sets", response_model=List[schemas.MonitoringSetOperatorResponse])
 def list_all_sets_for_operator(db: Session = Depends(get_db)):
@@ -242,9 +358,6 @@ def reprocess_set(set_id: UUID, db: Session = Depends(get_db)):
     if not db_set:
         raise HTTPException(status_code=404, detail="Set not found")
     
-    # In a real system, we would clear mentions or flag them for update
-    # and notify the processing engine.
-    # For now, we simulate by logging the action.
     operator = db.query(models.User).filter(models.User.role == "operator").first()
     log = models.OperatorLog(
         operator_id=operator.id,
@@ -268,7 +381,6 @@ def update_user_credit(user_id: UUID, credit_limit: int, db: Session = Depends(g
 
 @app.post("/api/operator/approve-set")
 def approve_set(action: schemas.OperatorAction, db: Session = Depends(get_db)):
-    # Mock Operator
     operator = db.query(models.User).filter(models.User.role == "operator").first()
     if not operator:
         operator = models.User(email="operator@mentions.com", role="operator", password_hash="op", full_name="Op Interno")
@@ -279,7 +391,6 @@ def approve_set(action: schemas.OperatorAction, db: Session = Depends(get_db)):
 
     db_set.status = "approved"
     
-    # Log Action
     log = models.OperatorLog(
         operator_id=operator.id,
         action="approve_set",
@@ -315,13 +426,12 @@ def get_system_health(db: Session = Depends(get_db)):
     return {
         "active_clients": active_clients,
         "active_sets": active_sets,
-        "running_now": 2, # Mock
-        "upcoming": 5,    # Mock
-        "errors": 0       # Mock
+        "running_now": 2,
+        "upcoming": 5,
+        "errors": 0
     }
 
 @app.get("/api/mentions", response_model=List[schemas.MentionResponse])
-
 def list_all_mentions(
     limit: int = Query(50, le=100),
     offset: int = 0,
@@ -350,6 +460,31 @@ def create_mention(set_id: UUID, mention_data: schemas.MentionBase, db: Session 
     db.commit()
     db.refresh(db_mention)
     return db_mention
+
+@app.get("/api/admin/users", response_model=List[schemas.UserResponse])
+def list_internal_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).filter(models.User.role.in_(["admin", "operator"])).all()
+    return users
+
+@app.post("/api/admin/user", response_model=schemas.UserResponse)
+def create_internal_user(user_data: schemas.UserCreateByOperator, db: Session = Depends(get_db)):
+    email_lower = user_data.email.lower()
+    existing = db.query(models.User).filter(func.lower(models.User.email) == email_lower).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+    
+    db_user = models.User(
+        email=email_lower,
+        password_hash=user_data.password,
+        full_name=user_data.full_name,
+        company_name="INTERNAL",
+        role=user_data.role, # Should be admin or operator
+        status="approved"
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

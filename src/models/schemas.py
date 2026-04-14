@@ -91,6 +91,19 @@ class UserUpdateByOperator(BaseModel):
     credit_limit: Optional[int] = None
     is_blocked_access: Optional[bool] = None
     status: Optional[str] = None
+    billing_info: Optional[dict] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+
+class UserCreateByOperator(BaseModel):
+    email: str
+    password: str = "1234"
+    full_name: str
+    company_name: str
+    role: str = "client"
+    status: str = "approved"
+    credit_limit: int = 5000
+    billing_info: Optional[dict] = None
 
 class ClientOperatorResponse(BaseModel):
     id: UUID
@@ -102,6 +115,7 @@ class ClientOperatorResponse(BaseModel):
     status: str
     active_sets_count: int
     total_minutes_estimate: int
+    billing_info: Optional[dict] = None
 
     class Config:
         from_attributes = True

@@ -8,3 +8,99 @@ Collecting usage statistics. To deactivate, set browser.gatherUsageStats to fals
   Network URL: http://10.1.0.24:8501
   External URL: http://191.232.53.126:8501
 
+2026-04-14 15:21:42.378 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-04-14 16:07:37.489 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 749
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-04-14 16:07:37.531 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 16:07:40.608 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 749
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-04-14 16:07:40.611 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 16:07:42.921 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 749
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-04-14 16:07:42.922 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 16:07:45.045 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 749
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-04-14 16:07:45.047 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 16:07:49.507 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 749
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-04-14 16:07:49.509 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 16:08:42.899 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 749
+    except Exception as e:
+    ^^^^^^
+SyntaxError: invalid syntax
+2026-04-14 16:08:42.902 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+  Stopping...

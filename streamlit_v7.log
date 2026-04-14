@@ -8,4 +8,94 @@ Collecting usage statistics. To deactivate, set browser.gatherUsageStats to fals
   Network URL: http://10.1.0.24:8501
   External URL: http://191.232.53.126:8501
 
+2026-04-14 17:32:14.983 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 89
+    ,
+    ^
+SyntaxError: invalid syntax
+2026-04-14 17:32:14.988 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 17:34:43.649 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 89
+    ,
+    ^
+SyntaxError: invalid syntax
+2026-04-14 17:34:43.652 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 17:34:45.878 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 89
+    ,
+    ^
+SyntaxError: invalid syntax
+2026-04-14 17:34:45.880 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 17:34:49.176 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 89
+    ,
+    ^
+SyntaxError: invalid syntax
+2026-04-14 17:34:49.177 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 17:34:54.228 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 89
+    ,
+    ^
+SyntaxError: invalid syntax
+2026-04-14 17:34:54.229 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-04-14 17:35:00.400 Script compilation error
+Traceback (most recent call last):
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 591, in _run_script
+    code = self._script_cache.get_bytecode(script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/script_cache.py", line 72, in get_bytecode
+    filebody = magic.add_magic(filebody, script_path)
+  File "/home/efonseca/.local/lib/python3.10/site-packages/streamlit/runtime/scriptrunner/magic.py", line 45, in add_magic
+    tree = ast.parse(code, script_path, "exec")
+  File "/usr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "/home/efonseca/workspace/Projeto Mentions On-Demand/src/ui/app.py", line 89
+    ,
+    ^
+SyntaxError: invalid syntax
+2026-04-14 17:35:00.402 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
   Stopping...
