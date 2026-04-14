@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+*.log
+.env
+.vscode/
+.idea/
+data/*.csv
+!data/agencias_marketing_ficticias.csv

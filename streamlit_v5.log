@@ -1,5 +1,0 @@
-Usage: streamlit run [OPTIONS] [TARGET] [ARGS]...
-Try 'streamlit run --help' for help.
-
-Error: Streamlit requires raw Python (.py) files, not .app.
-For more information, please see https://docs.streamlit.io
