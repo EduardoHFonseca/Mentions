@@ -1,0 +1,10 @@
+{
+  "publishes": {
+    "rapid-forge-2ft3": {
+      "siteUrl": "https://rapid-forge-2ft3.here.now/",
+      "claimToken": "a3a1b6aa5cdac11782be1451e44f2e3b470ec5eda4e45ff8b63280f06aed5b4e",
+      "claimUrl": "https://here.now/claim?slug=rapid-forge-2ft3&token=a3a1b6aa5cdac11782be1451e44f2e3b470ec5eda4e45ff8b63280f06aed5b4e",
+      "expiresAt": "2026-04-09T14:32:30.602Z"
+    }
+  }
+}

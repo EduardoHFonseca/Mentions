@@ -1,0 +1,252 @@
+INFO:     Started server process [693308]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     87.236.176.176:58249 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43542 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43546 - "GET /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59050 - "GET /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59060 - "GET /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59076 - "GET /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42658 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42668 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47426 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47440 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47456 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47464 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47470 - "GET /api/reports/config/96224cb2-29e2-4bb0-8b82-bc301336e0bc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47482 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47498 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47512 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47520 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47526 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47536 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44950 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44966 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44968 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44982 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44988 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44992 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45006 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45016 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45024 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45036 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45042 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45056 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45066 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45078 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45094 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32870 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32874 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32876 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32886 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32898 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42930 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42940 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42942 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42958 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42962 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42972 - "GET /api/reports/config/96224cb2-29e2-4bb0-8b82-bc301336e0bc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52646 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52656 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52662 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52672 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52674 - "DELETE /api/sets/96224cb2-29e2-4bb0-8b82-bc301336e0bc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52688 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52692 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52706 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52712 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34330 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34338 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34342 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34354 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34368 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37140 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37144 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40444 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40446 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40456 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40470 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40474 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40490 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40492 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40508 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40516 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40532 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53652 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53668 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53680 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53692 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     173.255.221.189:43602 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58800 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58812 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58818 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58830 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58844 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48684 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44700 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41760 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41770 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41782 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41792 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41794 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41802 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55572 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55584 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55596 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55608 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55622 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55630 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55642 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55654 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55664 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49356 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49358 - "GET /api/grid/lookup?limit=15&channel=ESPN4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49366 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49374 - "GET /api/grid/lookup?limit=15&channel=ESPN4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49380 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49388 - "GET /api/grid/lookup?limit=15&channel=ESPN4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35232 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35234 - "GET /api/grid/lookup?limit=15&channel=ESPN4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35238 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35244 - "GET /api/grid/lookup?limit=15&channel=ESPN4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35258 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35268 - "GET /api/grid/lookup?limit=15&channel=ESPN4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35282 - "POST /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35292 - "PATCH /api/sets/274177b9-aae2-419e-b767-ff483899291f/status?status=awaiting_approval HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35298 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35306 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35314 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35328 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35338 - "GET /api/reports/config/274177b9-aae2-419e-b767-ff483899291f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59932 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59938 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59950 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37132 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37134 - "GET /api/grid/lookup?limit=15&channel=ESPN2+BRASIL HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37144 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37152 - "GET /api/grid/lookup?limit=15&channel=ESPN2+BRASIL HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37168 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37182 - "GET /api/grid/lookup?limit=15&channel=ESPN2+BRASIL HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37198 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37208 - "GET /api/grid/lookup?limit=15&channel=ESPN2+BRASIL HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37212 - "PUT /api/sets/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37222 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37232 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37238 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37242 - "GET /api/reports/config/274177b9-aae2-419e-b767-ff483899291f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37254 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36410 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36418 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36426 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36442 - "GET /api/reports/config/274177b9-aae2-419e-b767-ff483899291f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36444 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50084 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50086 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46786 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46794 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41586 - "GET /api/grid/channels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41600 - "PUT /api/sets/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41604 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41614 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41620 - "GET /api/reports/config/2936bb40-50ef-4d41-93f8-becb40ef154b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41628 - "GET /api/reports/config/274177b9-aae2-419e-b767-ff483899291f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41644 - "GET /api/reports/config/7245d245-01cb-4296-b000-c0577db35fe2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51964 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51968 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51984 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51990 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51998 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52006 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52014 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52016 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52032 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52044 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52058 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52068 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52082 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52092 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52100 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52106 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52110 - "GET /api/sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52124 - "GET /api/reports/config/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52132 - "GET /api/reports/history/402400c1-fff9-433c-8837-e54ec6531ffe HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52144 - "GET /api/invoices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52154 - "GET /api/mentions?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37572 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37574 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37578 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37590 - "POST /api/operator/approve-set HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37606 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38302 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38306 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38316 - "POST /api/operator/approve-set HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38328 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41272 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41280 - "POST /api/operator/approve-set HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41286 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41294 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50178 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54538 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38842 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58890 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57352 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34946 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34956 - "GET /api/operator/sets HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34966 - "GET /api/operator/clients HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60308 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60310 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38060 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38064 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38068 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38084 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38088 - "GET /api/operator/sets HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60976 - "GET /api/operator/clients HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56514 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56524 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55298 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55300 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55312 - "GET /api/operator/sets HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55316 - "GET /api/operator/clients HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39124 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39128 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39134 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39136 - "GET /api/operator/sets HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39142 - "GET /api/operator/clients HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39156 - "GET /api/operator/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39160 - "GET /api/operator/sets HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39168 - "GET /api/operator/pending-sets HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+INFO:     152.32.235.160:51690 - "GET / HTTP/1.1" 200 OK
+INFO:     152.32.235.160:51820 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     152.32.235.160:51986 - "GET /sitemap.xml HTTP/1.1" 404 Not Found
+INFO:     152.32.235.160:51984 - "GET /robots.txt HTTP/1.1" 404 Not Found
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+INFO:     85.217.149.1:37858 - "GET / HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     152.32.192.230:26320 - "GET /api/v2/heartbeat HTTP/1.1" 404 Not Found
+INFO:     152.32.192.230:26666 - "GET / HTTP/1.1" 200 OK
+INFO:     152.32.192.230:27070 - "GET / HTTP/1.1" 200 OK
+INFO:     152.32.192.230:27426 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     172.236.228.193:60756 - "GET / HTTP/1.1" 200 OK
+INFO:     198.235.24.151:59508 - "GET / HTTP/1.1" 200 OK
+INFO:     66.132.195.131:12172 - "GET / HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     66.132.195.131:10344 - "GET / HTTP/1.1" 200 OK
+INFO:     66.132.195.131:10360 - "PRI %2A HTTP/2.0" 404 Not Found
+WARNING:  Invalid HTTP request received.
+INFO:     66.132.195.131:10364 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     66.132.195.131:54190 - "GET / HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     66.132.195.131:54210 - "GET /wiki HTTP/1.1" 404 Not Found
+WARNING:  Invalid HTTP request received.
+INFO:     198.235.24.91:62606 - "GET / HTTP/1.1" 200 OK
+INFO:     172.236.228.245:25108 - "GET / HTTP/1.1" 200 OK
+INFO:     121.143.138.130:57105 - "GET / HTTP/1.0" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     91.230.168.87:42759 - "GET / HTTP/1.1" 200 OK
+INFO:     195.184.76.196:35613 - "GET /favicon.ico HTTP/1.1" 404 Not Found

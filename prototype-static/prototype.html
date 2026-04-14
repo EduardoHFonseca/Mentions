@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="title">Prototype: Mentions On-Demand</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .flag-btn { cursor: pointer; font-size: 1.5rem; transition: transform 0.2s; }
+        .flag-btn:hover { transform: scale(1.2); }
+        [data-i18n] { transition: opacity 0.2s; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navbar Simulado -->
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold">M</div>
+                <span class="font-bold text-gray-800 text-lg">Mentions On-Demand</span>
+            </div>
+            <!-- Menu moved to the left after brand -->
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+                <span data-i18n="menu_schedule" class="hover:text-blue-600 cursor-pointer">Schedule</span>
+                <span data-i18n="menu_monitoring" class="hover:text-blue-600 cursor-pointer text-blue-600 border-b-2 border-blue-600">Monitoring</span>
+                <span data-i18n="menu_reports" class="hover:text-blue-600 cursor-pointer">Reports</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <!-- Language Flags -->
+            <div class="flex items-center gap-3">
+                <span class="flag-btn" onclick="setLanguage('en')" title="English">🇬🇧</span>
+                <span class="flag-btn" onclick="setLanguage('pt')" title="Português">🇵🇹</span>
+                <span class="flag-btn" onclick="setLanguage('es')" title="Español">🇪🇸</span>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gray-200 border border-gray-300"></div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-2xl border border-gray-100 mt-10 mb-20">
+        <!-- Protótipo do Form (Não-Funcional) -->
+        <div class="mb-8 pb-6 border-b border-gray-100">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 data-i18n="heading" class="text-2xl font-bold text-gray-800">New Monitoring Set</h1>
+                    <p data-i18n="subtitle" class="text-gray-500 text-sm mt-1">Create a set of rules to monitor specific terms on the TV grid.</p>
+                </div>
+                <span data-i18n="status_label" class="bg-yellow-50 text-yellow-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-yellow-100">Stand-by</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                <div>
+                    <label data-i18n="label_name" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Monitoring Name</label>
+                    <input type="text" id="input_name" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-700" value="Rural Monitoring 2026 - Soy">
+                </div>
+                
+                <div>
+                    <label data-i18n="label_terms" class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Search Terms</label>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100 flex items-center gap-2">
+                            <span data-i18n="term_1">Crop</span> <span class="opacity-50 hover:text-red-500 cursor-pointer">×</span>
+                        </span>
+                        <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100 flex items-center gap-2">
+                            <span data-i18n="term_2">Weather</span> <span class="opacity-50 hover:text-red-500 cursor-pointer">×</span>
+                        </span>
+                        <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-blue-100 flex items-center gap-2">
+                            <span data-i18n="term_3">Export</span> <span class="opacity-50 hover:text-red-500 cursor-pointer">×</span>
+                        </span>
+                        <div class="bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-200 cursor-pointer">
+                            +
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Regras -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 data-i18n="grid_heading" class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    Scheduled Grid Rules
+                </h2>
+                <button data-i18n="btn_consult_grid" class="text-sm bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition flex items-center gap-2 font-bold shadow-md shadow-blue-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    Consult TV Grid
+                </button>
+            </div>
+
+            <div class="overflow-hidden border border-gray-100 rounded-2xl shadow-sm bg-white">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 tracking-widest border-b border-gray-100">
+                        <tr>
+                            <th data-i18n="th_channel" class="px-6 py-4">Channel</th>
+                            <th data-i18n="th_program" class="px-6 py-4">Program</th>
+                            <th data-i18n="th_window" class="px-6 py-4">Time Window</th>
+                            <th data-i18n="th_frequency" class="px-6 py-4">Frequency</th>
+                            <th data-i18n="th_actions" class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-5 font-bold text-gray-800 flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-red-500"></div> Globo
+                            </td>
+                            <td class="px-6 py-5 text-gray-600 font-medium">Jornal Nacional</td>
+                            <td class="px-6 py-5 text-gray-600">20:30 — 21:15</td>
+                            <td class="px-6 py-5">
+                                <div class="flex gap-1.5 flex-wrap">
+                                    <span data-i18n="day_mon" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm shadow-blue-200 uppercase">MON</span>
+                                    <span data-i18n="day_tue" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm shadow-blue-200 uppercase">TUE</span>
+                                    <span data-i18n="day_wed" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm shadow-blue-200 uppercase">WED</span>
+                                    <span data-i18n="day_thu" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm shadow-blue-200 uppercase">THU</span>
+                                    <span data-i18n="day_fri" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm shadow-blue-200 uppercase">FRI</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-right flex justify-end gap-2">
+                                <button class="text-blue-300 hover:text-blue-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                </button>
+                                <button class="text-red-300 hover:text-red-500 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ações Finais -->
+        <div class="flex justify-between items-center pt-8 border-t border-gray-100">
+            <div class="flex items-center gap-3 text-sm text-gray-400 font-medium">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+                </span>
+                <span data-i18n="footer_status">Editing in progress (Draft)</span>
+            </div>
+            
+            <div class="flex gap-4">
+                <button class="flex items-center gap-2 px-8 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition font-bold text-sm shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    <span data-i18n="btn_save">Save Draft</span>
+                </button>
+                <button class="flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition font-bold text-sm shadow-lg shadow-green-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    <span data-i18n="btn_send">Send for Approval</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center pb-20 text-gray-300 text-xs font-medium uppercase tracking-[0.2em]">
+        Visual Only Prototype • Mentions On-Demand System
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                title: "Prototype: Mentions On-Demand",
+                menu_schedule: "Schedule",
+                menu_monitoring: "Monitoring",
+                menu_reports: "Reports",
+                heading: "New Monitoring Set",
+                subtitle: "Create a set of rules to monitor specific terms on the TV grid.",
+                status_label: "Stand-by",
+                label_name: "Monitoring Name",
+                input_name: "Rural Monitoring 2026 - Soy",
+                label_terms: "Search Terms",
+                term_1: "Crop",
+                term_2: "Weather",
+                term_3: "Export",
+                grid_heading: "Scheduled Grid Rules",
+                btn_consult_grid: "Consult TV Grid",
+                th_channel: "Channel",
+                th_program: "Program",
+                th_window: "Time Window",
+                th_frequency: "Frequency",
+                th_actions: "Actions",
+                day_mon: "MON",
+                day_tue: "TUE",
+                day_wed: "WED",
+                day_thu: "THU",
+                day_fri: "FRI",
+                footer_status: "Editing in progress (Draft)",
+                btn_save: "Save Draft",
+                btn_send: "Send for Approval"
+            },
+            pt: {
+                title: "Protótipo: Mentions On-Demand",
+                menu_schedule: "Agenda",
+                menu_monitoring: "Monitoramentos",
+                menu_reports: "Relatórios",
+                heading: "Novo Conjunto de Monitoramento",
+                subtitle: "Crie um conjunto de regras para monitorar termos específicos na grade de TV.",
+                status_label: "Stand-by",
+                label_name: "Nome do Monitoramento",
+                input_name: "Monitoramento Rural 2026 - Soja",
+                label_terms: "Termos de Busca",
+                term_1: "Safra",
+                term_2: "Clima",
+                term_3: "Exportação",
+                grid_heading: "Regras de Grade Agendadas",
+                btn_consult_grid: "Consultar Grade de TV",
+                th_channel: "Canal",
+                th_program: "Programa",
+                th_window: "Janela de Horário",
+                th_frequency: "Frequência",
+                th_actions: "Ações",
+                day_mon: "SEG",
+                day_tue: "TER",
+                day_wed: "QUA",
+                day_thu: "QUI",
+                day_fri: "SEX",
+                footer_status: "Edição em curso (Rascunho)",
+                btn_save: "Salvar Rascunho",
+                btn_send: "Enviar para Aprovação"
+            },
+            es: {
+                title: "Prototipo: Mentions On-Demand",
+                menu_schedule: "Agenda",
+                menu_monitoring: "Monitoreo",
+                menu_reports: "Informes",
+                heading: "Nuevo Conjunto de Monitoreo",
+                subtitle: "Cree un conjunto de reglas para monitorear términos específicos en la parrilla de TV.",
+                status_label: "Stand-by",
+                label_name: "Nombre del Monitoreo",
+                input_name: "Monitoreo Rural 2026 - Soja",
+                label_terms: "Términos de Búsqueda",
+                term_1: "Cosecha",
+                term_2: "Clima",
+                term_3: "Exportación",
+                grid_heading: "Reglas de Parrilla Programadas",
+                btn_consult_grid: "Consultar Parrilla de TV",
+                th_channel: "Canal",
+                th_program: "Programa",
+                th_window: "Ventana de Horario",
+                th_frequency: "Frecuencia",
+                th_actions: "Acciones",
+                day_mon: "LUN",
+                day_tue: "MAR",
+                day_wed: "MIÉ",
+                day_thu: "JUE",
+                day_fri: "VIE",
+                footer_status: "Edición em curso (Borrador)",
+                btn_save: "Guardar Borrador",
+                btn_send: "Enviar para Aprobación"
+            }
+        };
+
+        function setLanguage(lang) {
+            document.documentElement.lang = lang;
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Update input placeholder/value if needed
+            const inputName = document.getElementById('input_name');
+            if (inputName) {
+                inputName.value = translations[lang].input_name;
+            }
+        }
+
+        // Initialize with English as requested
+        setLanguage('en');
+    </script>
+</body>
+</html>
