@@ -94,6 +94,7 @@ class UserUpdateByOperator(BaseModel):
     billing_info: Optional[dict] = None
     password: Optional[str] = None
     role: Optional[str] = None
+    document_status: Optional[str] = None
 
 class UserCreateByOperator(BaseModel):
     email: str
@@ -116,6 +117,8 @@ class ClientOperatorResponse(BaseModel):
     active_sets_count: int
     total_minutes_estimate: int
     billing_info: Optional[dict] = None
+    document_status: Optional[str] = "missing"
+    documents: Optional[dict] = {}
 
     class Config:
         from_attributes = True
@@ -139,6 +142,9 @@ class UserResponse(BaseModel):
     company_name: Optional[str]
     status: str
     is_blocked_access: bool
+    document_status: Optional[str] = "missing"
+    documents: Optional[dict] = {}
+    credit_limit: Optional[int] = 0
 
     class Config:
         from_attributes = True
@@ -195,6 +201,8 @@ class MentionBase(BaseModel):
     transcription: str
     context: Optional[str] = None
     video_url: Optional[str] = None
+    audience_share: Optional[int] = None
+    audience_rating: Optional[int] = None
 
 class MentionResponse(MentionBase):
     id: UUID

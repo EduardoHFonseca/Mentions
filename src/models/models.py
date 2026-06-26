@@ -19,6 +19,11 @@ class User(Base):
     is_blocked_access = Column(Boolean, default=False)
     role = Column(String, default="client")  # admin, client, operator
     status = Column(String, default="pending_approval")  # pending_approval, approved, blocked
+    
+    # Onboarding & Self-Service Profile
+    document_status = Column(String, default="missing") # missing, pending_review, verified
+    documents = Column(JSON, default={}) # Stores file paths/metadata
+    
     erp_client_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -112,6 +117,11 @@ class Mention(Base):
     transcription = Column(String, nullable=False)
     context = Column(String, nullable=True)
     video_url = Column(String, nullable=True)
+    
+    # Audience Data (Premium)
+    audience_share = Column(Integer, nullable=True) # % * 100 (e.g. 15.5% = 1550)
+    audience_rating = Column(Integer, nullable=True) # % * 100
+    
     created_at = Column(DateTime, default=datetime.utcnow)
 
     monitoring_set = relationship("MonitoringSet", back_populates="mentions")

@@ -36,17 +36,24 @@ class EmailService:
     ) -> dict:
         """
         Envia uma notificação rápida de ocorrência encontrada.
+        Durante o desenvolvimento, redireciona para eduardo.fonseca@ibope.com
         """
+        # --- DESENVOLVIMENTO: REDIRECIONAMENTO ---
+        # Mantemos os endereços originais para fins de login/banco, 
+        # mas as notificações vão para o e-mail de dev.
+        dev_override = "eduardo.fonseca@ibope.com"
+        # -----------------------------------------
+
         target_inbox = inbox_id or self.inbox_id
         url = f"{self.base_url}/inboxes/{target_inbox}/messages/send"
         
         payload = {
-            "to": to,
-            "subject": subject,
-            "text": text,
+            "to": dev_override,
+            "subject": f"[DEV-ONLY] {subject}", # Prefixo para clareza
+            "text": f"Original To: {to}\n\n{text}",
         }
         if html:
-            payload["html"] = html
+            payload["html"] = f"<p><b>Original To:</b> {to}</p><hr>" + html
             
         response = requests.post(url, json=payload, headers=self._get_headers())
         response.raise_for_status()
@@ -63,7 +70,12 @@ class EmailService:
     ) -> dict:
         """
         Envia um relatório com anexo (CSV ou PDF).
+        Durante o desenvolvimento, redireciona para eduardo.fonseca@ibope.com
         """
+        # --- DESENVOLVIMENTO: REDIRECIONAMENTO ---
+        dev_override = "eduardo.fonseca@ibope.com"
+        # -----------------------------------------
+
         target_inbox = self.inbox_id
         url = f"{self.base_url}/inboxes/{target_inbox}/messages/send"
         
@@ -75,9 +87,9 @@ class EmailService:
         }]
         
         payload = {
-            "to": to,
-            "subject": subject,
-            "text": text,
+            "to": dev_override,
+            "subject": f"[DEV-ONLY REPORT] {subject}",
+            "text": f"Original To: {to}\n\n{text}",
             "attachments": attachments
         }
         

@@ -1,0 +1,22 @@
+{
+  "publishes": {
+    "brave-quinoa-ce32": {
+      "siteUrl": "https://brave-quinoa-ce32.here.now/",
+      "claimToken": "82ee3f798562ab89d1fa0184da841b154630a555fc35da1e4f74c7df3a8fa567",
+      "claimUrl": "https://here.now/claim?slug=brave-quinoa-ce32&token=82ee3f798562ab89d1fa0184da841b154630a555fc35da1e4f74c7df3a8fa567",
+      "expiresAt": "2026-04-23T15:28:46.497Z"
+    },
+    "quaint-savoy-p754": {
+      "siteUrl": "https://quaint-savoy-p754.here.now/",
+      "claimToken": "89eb378e2060fd447f3d26682c87cbaa30cc32c15176d237eca6e3badf20508d",
+      "claimUrl": "https://here.now/claim?slug=quaint-savoy-p754&token=89eb378e2060fd447f3d26682c87cbaa30cc32c15176d237eca6e3badf20508d",
+      "expiresAt": "2026-04-23T16:04:17.266Z"
+    },
+    "tidal-prana-e3m4": {
+      "siteUrl": "https://tidal-prana-e3m4.here.now/",
+      "claimToken": "e8df6e018c4f5de5287df9d3d1568dbc6f59de0127f2a42e9025296d77ec3f89",
+      "claimUrl": "https://here.now/claim?slug=tidal-prana-e3m4&token=e8df6e018c4f5de5287df9d3d1568dbc6f59de0127f2a42e9025296d77ec3f89",
+      "expiresAt": "2026-04-23T16:11:49.726Z"
+    }
+  }
+}

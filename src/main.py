@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime, date
 import uvicorn
+import shutil
+import os
 
 from src.database import get_db
 from src.models import models
@@ -35,12 +38,19 @@ def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
     if not user or user.password_hash != req.password:
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
     
-    if user.status == "pending_approval":
+    if user.status == "pending_approval" and user.role != "client":
         raise HTTPException(status_code=403, detail="Sua conta está aguardando aprovação")
     
-    if user.is_blocked_access:
+    if user.is_blocked_access and user.status != "pending_approval":
         raise HTTPException(status_code=403, detail="Seu acesso está bloqueado")
         
+    return user
+
+@app.get("/api/user/{user_id}", response_model=schemas.UserResponse)
+def get_user_by_id(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
     return user
 
 @app.post("/api/auth/register", response_model=schemas.UserResponse)
@@ -59,6 +69,8 @@ def register_public(user_data: schemas.UserCreateByOperator, db: Session = Depen
         role="client",
         status="pending_approval", # Force pending approval for public registration
         credit_limit=0, # Initial credit 0
+        is_blocked_access=True, # Initially blocked
+        document_status="missing",
         billing_info=user_data.billing_info
     )
     db.add(db_user)
@@ -119,15 +131,36 @@ def create_monitoring_set(set_data: schemas.MonitoringSetCreate, user_id: Option
         if duration < 0: duration += 24*60 # Cross midnight
         total_min += duration * len(r.days_of_week)
 
+    # AUTO-APPROVAL LOGIC
+    # 1. Get user credit and existing active sets cost
+    user_obj = db.query(models.User).filter(models.User.id == effective_user_id).first()
+    
+    # Simple price logic: 10 cents per minute
+    new_set_cost = total_min * 10
+    
+    # Calculate current usage
+    existing_sets = db.query(models.MonitoringSet).filter(
+        models.MonitoringSet.user_id == effective_user_id,
+        models.MonitoringSet.status == "active"
+    ).all()
+    current_weekly_cost = sum(s.total_minutes_estimate * 10 for s in existing_sets)
+    
+    # Decide status
+    if (current_weekly_cost + new_set_cost) <= user_obj.credit_limit:
+        initial_status = "active"
+    else:
+        initial_status = "awaiting_approval"
+
     db_set = models.MonitoringSet(
         user_id=effective_user_id,
         name=set_data.name,
         search_terms=set_data.search_terms,
-        status="stand_by",
+        status=initial_status,
         total_minutes_estimate=total_min,
         audience_data_enabled=set_data.audience_data_enabled,
         clip_context_seconds=set_data.clip_context_seconds
     )
+
     db.add(db_set)
     db.commit()
     db.refresh(db_set)
@@ -168,6 +201,40 @@ def get_report_config(set_id: UUID, db: Session = Depends(get_db)):
 @app.get("/api/reports/history/{set_id}", response_model=List[schemas.ReportResponse])
 def get_report_history(set_id: UUID, db: Session = Depends(get_db)):
     return db.query(models.Report).filter(models.Report.monitoring_set_id == set_id).order_by(models.Report.generated_at.desc()).all()
+
+@app.post("/api/reports/generate", response_model=schemas.ReportResponse)
+def generate_report_manual(
+    set_id: UUID, 
+    user_id: UUID, 
+    start_date: Optional[date] = Query(None), 
+    end_date: Optional[date] = Query(None), 
+    db: Session = Depends(get_db)
+):
+    from datetime import timedelta
+    import random
+    
+    db_set = db.query(models.MonitoringSet).filter(models.MonitoringSet.id == set_id).first()
+    if not db_set:
+        raise HTTPException(status_code=404, detail="Set not found")
+        
+    report_num = random.randint(1000, 9999)
+    
+    p_start = datetime.combine(start_date, datetime.min.time()) if start_date else (datetime.utcnow() - timedelta(days=7))
+    p_end = datetime.combine(end_date, datetime.max.time()) if end_date else datetime.utcnow()
+    
+    db_report = models.Report(
+        user_id=user_id,
+        monitoring_set_id=set_id,
+        generated_at=datetime.utcnow(),
+        file_url=f"https://example.com/reports/report_{db_set.name.replace(' ', '_')}_{report_num}.pdf",
+        period_start=p_start,
+        period_end=p_end,
+        status="ready"
+    )
+    db.add(db_report)
+    db.commit()
+    db.refresh(db_report)
+    return db_report
 
 @app.get("/api/invoices", response_model=List[schemas.InvoiceResponse])
 def list_invoices(user_id: Optional[UUID] = Query(None), db: Session = Depends(get_db)):
@@ -233,6 +300,40 @@ def update_set_status(set_id: UUID, status: str, db: Session = Depends(get_db)):
     return {"status": "updated", "new_status": status}
 
 # Operator Specific Endpoints
+@app.get("/api/operator/pending-clients", response_model=List[schemas.ClientOperatorResponse])
+def list_pending_clients(db: Session = Depends(get_db)):
+    clients = db.query(models.User).filter(models.User.role == "client", models.User.status == "pending_approval").all()
+    results = []
+    for c in clients:
+        active_sets = [s for s in c.monitoring_sets if s.status == "active"]
+        total_min = sum(s.total_minutes_estimate for s in c.monitoring_sets)
+        results.append({
+            "id": c.id,
+            "full_name": c.full_name or "N/A",
+            "email": c.email,
+            "company_name": c.company_name or "N/A",
+            "credit_limit": c.credit_limit,
+            "is_blocked_access": c.is_blocked_access,
+            "status": c.status,
+            "active_sets_count": len(active_sets),
+            "total_minutes_estimate": total_min,
+            "billing_info": c.billing_info,
+            "document_status": c.document_status,
+            "documents": c.documents
+        })
+    return results
+
+@app.patch("/api/operator/approve-client/{user_id}")
+def approve_client(user_id: UUID, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    user.status = "approved"
+    user.is_blocked_access = False
+    user.document_status = "verified"
+    db.commit()
+    return {"status": "approved", "user_id": user_id}
+
 @app.get("/api/operator/pending-sets")
 def list_pending_sets(db: Session = Depends(get_db)):
     sets = db.query(models.MonitoringSet).join(models.User).filter(models.MonitoringSet.status == "awaiting_approval").all()
@@ -333,6 +434,8 @@ def update_user_details(user_id: UUID, update_data: schemas.UserUpdateByOperator
         user.password_hash = update_data.password
     if update_data.role is not None:
         user.role = update_data.role
+    if update_data.document_status is not None:
+        user.document_status = update_data.document_status
     if update_data.billing_info is not None:
         if user.billing_info is None:
             user.billing_info = update_data.billing_info
@@ -485,6 +588,38 @@ def create_internal_user(user_data: schemas.UserCreateByOperator, db: Session = 
     db.commit()
     db.refresh(db_user)
     return db_user
+
+@app.post("/api/user/upload-document")
+async def upload_document(
+    user_id: UUID = Form(...),
+    doc_type: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    upload_dir = "uploads"
+    user_dir = os.path.join(upload_dir, str(user_id))
+    os.makedirs(user_dir, exist_ok=True)
+    
+    file_path = os.path.join(user_dir, file.filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Update documents JSON
+    docs = dict(user.documents) if user.documents else {}
+    docs[doc_type] = {
+        "filename": file.filename,
+        "path": file_path,
+        "uploaded_at": datetime.utcnow().isoformat()
+    }
+    user.documents = docs
+    user.document_status = "pending_review"
+    db.commit()
+    
+    return {"status": "uploaded", "doc_type": doc_type}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

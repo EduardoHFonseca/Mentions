@@ -5,6 +5,12 @@
       "claimToken": "a3a1b6aa5cdac11782be1451e44f2e3b470ec5eda4e45ff8b63280f06aed5b4e",
       "claimUrl": "https://here.now/claim?slug=rapid-forge-2ft3&token=a3a1b6aa5cdac11782be1451e44f2e3b470ec5eda4e45ff8b63280f06aed5b4e",
       "expiresAt": "2026-04-09T14:32:30.602Z"
+    },
+    "mighty-violet-hpfh": {
+      "siteUrl": "https://mighty-violet-hpfh.here.now/",
+      "claimToken": "de434ba8fe39b402695b3967d21eb83e375c6421533c8e4e4993a26cad8cad91",
+      "claimUrl": "https://here.now/claim?slug=mighty-violet-hpfh&token=de434ba8fe39b402695b3967d21eb83e375c6421533c8e4e4993a26cad8cad91",
+      "expiresAt": "2026-04-17T15:53:54.524Z"
     }
   }
 }

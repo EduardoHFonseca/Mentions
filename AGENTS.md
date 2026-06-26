@@ -293,4 +293,5 @@ Use `here.now` to share static prototypes, files, or documentation instantly.
 ---
 
 ## Specific Directives
-- **NÃO publicar no here.now a partir de agora.**
+- **Este projeto deve ser executado APENAS em webservice local.**
+- **DIRETIVA DE TENTATIVAS:** Se houver uma tentativa de corrigir um problema de desenvolvimento mais de 5 vezes na mesma sequência sem resultado, propor outras soluções em diferentes tecnologias.
