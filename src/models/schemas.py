@@ -10,6 +10,7 @@ class ProgrammingGridBase(BaseModel):
     end_time: Optional[time]
     program_name: str
     description: Optional[str]
+    market: Optional[str] = "NACIONAL"
     is_live: bool
 
 class ProgrammingGridResponse(ProgrammingGridBase):
@@ -29,6 +30,8 @@ class MonitoringRuleBase(BaseModel):
     start_time: time
     end_time: time
     days_of_week: List[int]
+    grid_type: Optional[str] = "national"
+    market: Optional[str] = "NACIONAL"
 
 class MonitoringRuleCreate(MonitoringRuleBase):
     pass
@@ -84,6 +87,11 @@ class OperatorLogResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ClientProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
 
 class UserUpdateByOperator(BaseModel):
     full_name: Optional[str] = None
@@ -145,6 +153,7 @@ class UserResponse(BaseModel):
     document_status: Optional[str] = "missing"
     documents: Optional[dict] = {}
     credit_limit: Optional[int] = 0
+    billing_info: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -211,3 +220,30 @@ class MentionResponse(MentionBase):
 
     class Config:
         from_attributes = True
+
+# TaskQueue Schemas
+class TaskQueueResponse(BaseModel):
+    id: UUID
+    monitoring_set_id: UUID
+    task_type: str
+    scheduled_for: datetime
+    status: str
+    payload: Optional[dict] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# System Config Schemas
+class SystemConfigUpdate(BaseModel):
+    default_credit_limit: float
+    price_per_minute: float
+    audience_multiplier_pct: float
+    clip_context_seconds: int
+
+class SystemConfigResponse(BaseModel):
+    default_credit_limit: float
+    price_per_minute: float
+    audience_multiplier_pct: float
+    clip_context_seconds: int

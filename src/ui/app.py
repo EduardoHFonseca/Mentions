@@ -269,7 +269,8 @@ LANG_DATA = {
         "tab_monitoring": "Monitoring",
         "msg_no_pending_clients": "No new clients awaiting approval.",
         "msg_no_pending_sets": "No monitoring sets awaiting approval.",
-        "lbl_docs_sent": "📁 Documents Sent",
+        "lbl_docs_sent": "📁 Documents Sent (100%)",
+        "lbl_docs_partial": "⚠️ Partial Upload (Incomplete)",
         "lbl_docs_verified": "✅ Docs Verified",
         "lbl_docs_missing": "❌ Missing Documents",
         "btn_view_approve": "View Details / Approve",
@@ -390,7 +391,8 @@ LANG_DATA = {
         "tab_monitoring": "Monitoramentos",
         "msg_no_pending_clients": "Nenhum novo cliente aguardando aprovação.",
         "msg_no_pending_sets": "Nenhum conjunto de monitoramento aguardando aprovação.",
-        "lbl_docs_sent": "📁 Documentos Enviados",
+        "lbl_docs_sent": "📁 Documentos Enviados (100%)",
+        "lbl_docs_partial": "⚠️ Envio Parcial (Incompleto)",
         "lbl_docs_verified": "✅ Docs Verificados",
         "lbl_docs_missing": "❌ Faltando Documentos",
         "btn_view_approve": "Ver Detalhes / Aprovar",
@@ -511,7 +513,8 @@ LANG_DATA = {
         "tab_monitoring": "Monitoreos",
         "msg_no_pending_clients": "No hay nuevos clientes pendientes de aprobación.",
         "msg_no_pending_sets": "No hay conjuntos de monitoreo pendientes de aprobación.",
-        "lbl_docs_sent": "📁 Documentos Enviados",
+        "lbl_docs_sent": "📁 Documentos Enviados (100%)",
+        "lbl_docs_partial": "⚠️ Envío Parcial (Incompleto)",
         "lbl_docs_verified": "✅ Docs Verificados",
         "lbl_docs_missing": "❌ Sin Documentos",
         "btn_view_approve": "Ver Detalles / Aprobar",
@@ -632,9 +635,67 @@ def render_monitoring_form():
                 st.write("Tags:", " ".join([f"`{t}`" for t in st.session_state.temp_terms]))
 
     st.subheader(L['btn_add_rule'])
-    
+
+    # Select Monitoring Mode: Editorial Programs vs Commercial Breaks
+    if st.session_state.lang == "PT":
+        mon_type_label = "Modo de Monitoramento"
+        mon_type_options = ["Programas da Grade (Editorial)", "Intervalos Comerciais (Anúncios & Breaks)"]
+    elif st.session_state.lang == "ES":
+        mon_type_label = "Modo de Monitoreo"
+        mon_type_options = ["Programas de la Parrilla (Editorial)", "Pausas Comerciales (Anuncios & Breaks)"]
+    else:
+        mon_type_label = "Monitoring Mode"
+        mon_type_options = ["Grid Programs (Editorial)", "Commercial Breaks (Ads & Breaks)"]
+
+    selected_mon_type = st.radio(mon_type_label, mon_type_options, horizontal=True)
+    is_commercial_mode = ("Intervalos Comerciais" in selected_mon_type or 
+                          "Pausas Comerciales" in selected_mon_type or 
+                          "Commercial Breaks" in selected_mon_type)
+
+    # Country selection
+    if st.session_state.lang == "PT":
+        country_label = "Selecione o País"
+        country_options = ["Brasil", "Holanda"]
+    elif st.session_state.lang == "ES":
+        country_label = "Seleccione el País"
+        country_options = ["Brasil", "Países Bajos"]
+    else:
+        country_label = "Select Country"
+        country_options = ["Brazil", "Netherlands"]
+
+    selected_country = st.selectbox(country_label, country_options)
+
+    selected_market = "NACIONAL"
+    grid_type_val = "national"
+
+    if selected_country in ["Brasil", "Brazil"]:
+        # Coverage type selection
+        if st.session_state.lang == "PT":
+            cov_options = ["Nacional", "Regional"]
+            mkt_label = "Selecione a Praça (Mercado)"
+            mkt_options = {"São Paulo (SP)": "SP", "Rio de Janeiro (RJ)": "RJ"}
+        elif st.session_state.lang == "ES":
+            cov_options = ["Nacional", "Regional"]
+            mkt_label = "Seleccione la Plaza (Mercado)"
+            mkt_options = {"São Paulo (SP)": "SP", "Río de Janeiro (RJ)": "RJ"}
+        else:
+            cov_options = ["National", "Regional"]
+            mkt_label = "Select Market (Place)"
+            mkt_options = {"São Paulo (SP)": "SP", "Rio de Janeiro (RJ)": "RJ"}
+            
+        cov_selection = st.radio("Tipo de Cobertura" if st.session_state.lang == "PT" else ("Tipo de Cobertura" if st.session_state.lang == "ES" else "Coverage Type"), cov_options, horizontal=True)
+        
+        if cov_selection == "Regional":
+            grid_type_val = "regional"
+            chosen_mkt_label = st.selectbox(mkt_label, list(mkt_options.keys()))
+            selected_market = mkt_options[chosen_mkt_label]
+    else:
+        # Holanda / Netherlands
+        selected_market = "NL"
+        grid_type_val = "national"
+        
     try:
-        ch_res = requests.get(f"{API_BASE_URL}/grid/channels")
+        ch_res = requests.get(f"{API_BASE_URL}/grid/channels", params={"market": selected_market})
         channels = ch_res.json() if ch_res.status_code == 200 else []
     except:
         channels = []
@@ -642,103 +703,242 @@ def render_monitoring_form():
     selected_channel = st.selectbox(L['label_channel'], [""] + channels)
     
     if selected_channel:
-        try:
-            params = {"channel": selected_channel, "limit": 100}
-            response = requests.get(f"{API_BASE_URL}/grid/lookup", params=params)
-            if response.status_code == 200:
-                results = response.json().get("items", [])
-                if results:
-                    # Group by program name to extract start/end times and days of occurrence
-                    programs_map = {}
-                    for res in results:
-                        p_name = res["program_name"]
-                        s_time = res["start_time"]
-                        e_time = res["end_time"]
-                        b_date_str = res["broadcast_date"]
-                        b_date = datetime.strptime(b_date_str, "%Y-%m-%d").date()
-                        day_num = b_date.weekday() + 1 # Monday=1, Sunday=7
-                        
-                        if p_name not in programs_map:
-                            programs_map[p_name] = {
-                                "start_time": s_time,
-                                "end_time": e_time,
-                                "days_of_week": {day_num}
-                            }
-                        else:
-                            programs_map[p_name]["days_of_week"].add(day_num)
-                    
-                    # Dropdown for Program Name
-                    sorted_programs = sorted(list(programs_map.keys()))
-                    selected_program_label = "Escolha o Programa" if st.session_state.lang == "PT" else ("Select Program" if st.session_state.lang == "EN" else "Seleccione el Programa")
-                    selected_program = st.selectbox(selected_program_label, [""] + sorted_programs)
-                    
-                    if selected_program:
-                        prog_info = programs_map[selected_program]
-                        
-                        # Format times to HH:MM for cleaner display
-                        try:
-                            s_dt = datetime.strptime(prog_info["start_time"], "%H:%M:%S")
-                            s_formatted = s_dt.strftime("%H:%M")
-                        except:
-                            s_formatted = prog_info["start_time"]
-                            
-                        try:
-                            e_dt = datetime.strptime(prog_info["end_time"], "%H:%M:%S")
-                            e_formatted = e_dt.strftime("%H:%M")
-                        except:
-                            e_formatted = prog_info["end_time"]
-                            
-                        st.info(f"**{selected_program}** | {s_formatted} - {e_formatted}")
-                        
-                        # Days of the week checkboxes
-                        if st.session_state.lang == "PT":
-                            days_info = [("Seg", 1), ("Ter", 2), ("Qua", 3), ("Qui", 4), ("Sex", 5), ("Sáb", 6), ("Dom", 7)]
-                            label_days = "Habilitar Dias da Semana"
-                            btn_add_lbl = "+ Adicionar Programa ao Monitoramento"
-                        elif st.session_state.lang == "ES":
-                            days_info = [("Lun", 1), ("Mar", 2), ("Mié", 3), ("Jue", 4), ("Vie", 5), ("Sáb", 6), ("Dom", 7)]
-                            label_days = "Habilitar Días de la Semana"
-                            btn_add_lbl = "+ Agregar Programa al Monitoreo"
-                        else:
-                            days_info = [("Mon", 1), ("Tue", 2), ("Wed", 3), ("Thu", 4), ("Fri", 5), ("Sat", 6), ("Sun", 7)]
-                            label_days = "Enable Days of the Week"
-                            btn_add_lbl = "+ Add Program to Monitoring"
-                            
-                        st.write(f"**{label_days}**")
-                        day_cols = st.columns(7)
-                        selected_days = []
-                        for idx, (day_name, day_num) in enumerate(days_info):
-                            with day_cols[idx]:
-                                is_prechecked = day_num in prog_info["days_of_week"]
-                                checked = st.checkbox(day_name, value=is_prechecked, key=f"day_chk_{day_num}_{selected_program}")
-                                if checked:
-                                    selected_days.append(day_num)
-                                    
-                        if st.button(btn_add_lbl, type="primary", use_container_width=True):
-                            if not selected_days:
-                                st.error("Selecione pelo menos um dia da semana!" if st.session_state.lang == "PT" else ("Please select at least one day of the week!" if st.session_state.lang == "EN" else "¡Seleccione al menos un día de la semana!"))
-                            else:
-                                new_rule = {
-                                    "channel": selected_channel,
-                                    "program_name": selected_program,
-                                    "start_time": prog_info["start_time"],
-                                    "end_time": prog_info["end_time"],
-                                    "days_of_week": selected_days
-                                }
-                                st.session_state.temp_rules.append(new_rule)
-                                st.success(f"**{selected_program}** adicionado!" if st.session_state.lang == "PT" else f"**{selected_program}** added!" if st.session_state.lang == "EN" else f"¡**{selected_program}** agregado!")
-                                st.rerun()
+        if is_commercial_mode:
+            # Mode: Commercial Breaks / Anúncios
+            if st.session_state.lang == "PT":
+                lbl_cob = "Cobertura Horária dos Comerciais"
+                opts_cob = ["24 Horas (Dia Todo)", "Faixa Horária Customizada"]
+                lbl_start = "Hora Início"
+                lbl_end = "Hora Fim"
+                days_info = [("Seg", 1), ("Ter", 2), ("Qua", 3), ("Qui", 4), ("Sex", 5), ("Sáb", 6), ("Dom", 7)]
+                label_days = "Habilitar Dias da Semana"
+                btn_add_com_lbl = "+ Adicionar Monitoramento de Comerciais"
+            elif st.session_state.lang == "ES":
+                lbl_cob = "Cobertura Horaria de Anuncios"
+                opts_cob = ["24 Horas (Todo el día)", "Franja Horaria Personalizada"]
+                lbl_start = "Hora Inicio"
+                lbl_end = "Hora Fin"
+                days_info = [("Lun", 1), ("Mar", 2), ("Mié", 3), ("Jue", 4), ("Vie", 5), ("Sáb", 6), ("Dom", 7)]
+                label_days = "Habilitar Días de la Semana"
+                btn_add_com_lbl = "+ Agregar Monitoreo de Anuncios"
+            else:
+                lbl_cob = "Commercial Schedule Coverage"
+                opts_cob = ["24 Hours (All Day)", "Custom Time Range"]
+                lbl_start = "Start Time"
+                lbl_end = "End Time"
+                days_info = [("Mon", 1), ("Tue", 2), ("Wed", 3), ("Thu", 4), ("Fri", 5), ("Sat", 6), ("Sun", 7)]
+                label_days = "Enable Days of the Week"
+                btn_add_com_lbl = "+ Add Commercial Monitoring"
+
+            cob_choice = st.radio(lbl_cob, opts_cob, horizontal=True)
+
+            if "Custom" in cob_choice or "Customizada" in cob_choice or "Personalizada" in cob_choice:
+                col_t1, col_t2 = st.columns(2)
+                with col_t1:
+                    val_start = st.time_input(lbl_start, value=time(18, 0), key=f"comm_start_{selected_channel}")
+                with col_t2:
+                    val_end = st.time_input(lbl_end, value=time(23, 59), key=f"comm_end_{selected_channel}")
+                
+                start_str = val_start.strftime("%H:%M:%S")
+                end_str = val_end.strftime("%H:%M:%S")
+                prog_label = f"Intervalo Comercial ({val_start.strftime('%H:%M')} - {val_end.strftime('%H:%M')})"
+            else:
+                start_str = "00:00:00"
+                end_str = "23:59:59"
+                prog_label = "Intervalo Comercial (24h)"
+
+            st.write(f"**{label_days}**")
+            day_cols = st.columns(7)
+            selected_days = []
+            for idx, (day_name, day_num) in enumerate(days_info):
+                with day_cols[idx]:
+                    checked = st.checkbox(day_name, value=True, key=f"comm_day_chk_{day_num}_{selected_channel}")
+                    if checked:
+                        selected_days.append(day_num)
+
+            if st.button(btn_add_com_lbl, type="primary", use_container_width=True):
+                if not selected_days:
+                    st.error("Selecione pelo menos um dia da semana!" if st.session_state.lang == "PT" else ("Please select at least one day of the week!" if st.session_state.lang == "EN" else "¡Seleccione al menos un día de la semana!"))
                 else:
-                    st.warning(L['msg_no_programs'])
-        except Exception as e:
-            st.error(f"{L['msg_connection_error']} {e}")
+                    new_rule = {
+                        "channel": selected_channel,
+                        "program_name": prog_label,
+                        "start_time": start_str,
+                        "end_time": end_str,
+                        "days_of_week": selected_days,
+                        "grid_type": grid_type_val,
+                        "market": selected_market
+                    }
+                    st.session_state.temp_rules.append(new_rule)
+                    st.success(f"**{prog_label}** adicionado!" if st.session_state.lang == "PT" else f"**{prog_label}** added!" if st.session_state.lang == "EN" else f"¡**{prog_label}** agregado!")
+                    st.rerun()
+        else:
+            try:
+                params = {"channel": selected_channel, "market": selected_market, "limit": 100}
+                response = requests.get(f"{API_BASE_URL}/grid/lookup", params=params)
+                if response.status_code == 200:
+                    results = response.json().get("items", [])
+                    if results:
+                        # Group by program name to extract start/end times and days of occurrence
+                        programs_map = {}
+                        for res in results:
+                            p_name = res["program_name"]
+                            s_time = res["start_time"]
+                            e_time = res["end_time"]
+                            b_date_str = res["broadcast_date"]
+                            b_date = datetime.strptime(b_date_str, "%Y-%m-%d").date()
+                            day_num = b_date.weekday() + 1 # Monday=1, Sunday=7
+                            
+                            if p_name not in programs_map:
+                                programs_map[p_name] = {
+                                    "start_time": s_time,
+                                    "end_time": e_time,
+                                    "days_of_week": {day_num},
+                                    "description": res.get("description", ""),
+                                    "is_live": res.get("is_live", False)
+                                }
+                            else:
+                                programs_map[p_name]["days_of_week"].add(day_num)
+                        
+                        # Dropdown for Program Name
+                        sorted_programs = sorted(list(programs_map.keys()))
+                        selected_program_label = "Escolha o Programa" if st.session_state.lang == "PT" else ("Select Program" if st.session_state.lang == "EN" else "Seleccione el Programa")
+                        selected_program = st.selectbox(selected_program_label, [""] + sorted_programs)
+                        
+                        if selected_program:
+                            prog_info = programs_map[selected_program]
+                            
+                            # Format times to HH:MM for cleaner display
+                            try:
+                                s_dt = datetime.strptime(prog_info["start_time"], "%H:%M:%S")
+                                s_formatted = s_dt.strftime("%H:%M")
+                            except:
+                                s_formatted = prog_info["start_time"]
+                                
+                            try:
+                                e_dt = datetime.strptime(prog_info["end_time"], "%H:%M:%S")
+                                e_formatted = e_dt.strftime("%H:%M")
+                            except:
+                                e_formatted = prog_info["end_time"]
+                                
+                            # Parse enriched metadata from description
+                            import re
+                            desc_text = prog_info.get("description", "")
+                            tags = []
+                            img_url = ""
+                            
+                            if desc_text:
+                                # Extract TAGS: |TAGS: REPRISE,SPORT|
+                                tags_match = re.search(r"\|TAGS:\s*([^|]+)\|", desc_text)
+                                if tags_match:
+                                    tags = [t.strip() for t in tags_match.group(1).split(",")]
+                                    desc_text = re.sub(r"\|TAGS:\s*[^|]+\|", "", desc_text)
+                                    
+                                # Extract IMG: |IMG: https://...|
+                                img_match = re.search(r"\|IMG:\s*([^|]+)\|", desc_text)
+                                if img_match:
+                                    img_url = img_match.group(1).strip()
+                                    desc_text = re.sub(r"\|IMG:\s*[^|]+\|", "", desc_text)
+                            
+                            desc_clean = desc_text.strip() if desc_text else ""
+                            
+                            # Display rich card if poster or description or badges exist
+                            if img_url or tags or desc_clean:
+                                st.markdown("<div style='margin-top: 15px; margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+                                col1, col2 = st.columns([1, 3])
+                                with col1:
+                                    if img_url:
+                                        st.image(img_url, use_container_width=True)
+                                    else:
+                                        st.markdown(
+                                            "<div style='background-color:#e2e8f0; height:120px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#475569; font-weight:bold;'>NO IMAGE</div>", 
+                                            unsafe_allow_html=True
+                                        )
+                                with col2:
+                                    st.markdown(f"### {selected_program}")
+                                    st.markdown(f"🕒 **{s_formatted} - {e_formatted}**")
+                                    
+                                    # Render badges
+                                    badge_html = ""
+                                    if prog_info.get("is_live"):
+                                        badge_html += "<span style='background-color:#ef4444; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; margin-right:5px;'>AO VIVO</span>"
+                                    for tag in tags:
+                                        if tag == "LIVE":
+                                            continue
+                                        bg_color = "#64748b" # gray
+                                        if tag == "SPORT":
+                                            bg_color = "#0F21FD" # Kantar Blue
+                                        elif tag == "NEWS":
+                                            bg_color = "#1e293b" # Slate
+                                        elif tag == "REPRISE":
+                                            bg_color = "#475569" # Gray-slate
+                                        elif tag == "TIP":
+                                            bg_color = "#f59e0b" # Orange
+                                            
+                                        badge_html += f"<span style='background-color:{bg_color}; color:white; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; margin-right:5px;'>{tag}</span>"
+                                    
+                                    if badge_html:
+                                        st.markdown(badge_html, unsafe_allow_html=True)
+                                        st.markdown("<div style='margin-bottom:8px;'></div>", unsafe_allow_html=True)
+                                    
+                                    if desc_clean:
+                                        st.write(desc_clean)
+                                st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+                            else:
+                                st.info(f"**{selected_program}** | {s_formatted} - {e_formatted}")
+                            
+                            # Days of the week checkboxes
+                            if st.session_state.lang == "PT":
+                                days_info = [("Seg", 1), ("Ter", 2), ("Qua", 3), ("Qui", 4), ("Sex", 5), ("Sáb", 6), ("Dom", 7)]
+                                label_days = "Habilitar Dias da Semana"
+                                btn_add_lbl = "+ Adicionar Programa ao Monitoramento"
+                            elif st.session_state.lang == "ES":
+                                days_info = [("Lun", 1), ("Mar", 2), ("Mié", 3), ("Jue", 4), ("Vie", 5), ("Sáb", 6), ("Dom", 7)]
+                                label_days = "Habilitar Días de la Semana"
+                                btn_add_lbl = "+ Agregar Programa al Monitoreo"
+                            else:
+                                days_info = [("Mon", 1), ("Tue", 2), ("Wed", 3), ("Thu", 4), ("Fri", 5), ("Sat", 6), ("Sun", 7)]
+                                label_days = "Enable Days of the Week"
+                                btn_add_lbl = "+ Add Program to Monitoring"
+                                
+                            st.write(f"**{label_days}**")
+                            day_cols = st.columns(7)
+                            selected_days = []
+                            for idx, (day_name, day_num) in enumerate(days_info):
+                                with day_cols[idx]:
+                                    is_prechecked = day_num in prog_info["days_of_week"]
+                                    checked = st.checkbox(day_name, value=is_prechecked, key=f"day_chk_{day_num}_{selected_program}")
+                                    if checked:
+                                        selected_days.append(day_num)
+                                        
+                            if st.button(btn_add_lbl, type="primary", use_container_width=True):
+                                if not selected_days:
+                                    st.error("Selecione pelo menos um dia da semana!" if st.session_state.lang == "PT" else ("Please select at least one day of the week!" if st.session_state.lang == "EN" else "¡Seleccione al menos un día de la semana!"))
+                                else:
+                                    new_rule = {
+                                        "channel": selected_channel,
+                                        "program_name": selected_program,
+                                        "start_time": prog_info["start_time"],
+                                        "end_time": prog_info["end_time"],
+                                        "days_of_week": selected_days,
+                                        "grid_type": grid_type_val,
+                                        "market": selected_market
+                                    }
+                                    st.session_state.temp_rules.append(new_rule)
+                                    st.success(f"**{selected_program}** adicionado!" if st.session_state.lang == "PT" else f"**{selected_program}** added!" if st.session_state.lang == "EN" else f"¡**{selected_program}** agregado!")
+                                    st.rerun()
+                    else:
+                        st.warning(L['msg_no_programs'])
+            except Exception as e:
+                st.error(f"{L['msg_connection_error']} {e}")
 
     if st.session_state.temp_rules:
         st.write(f"### {L['header_rules_selected']}")
         for i, r in enumerate(st.session_state.temp_rules):
             col_r1, col_r2 = st.columns([4, 1])
             with col_r1:
-                st.write(f"**{r['channel']}**: {r['program_name']} ({r['start_time']}-{r['end_time']}) | *{format_days(r['days_of_week'], st.session_state.lang)}*")
+                mkt_suff = f" ({r['market']})" if r.get('market') and r.get('market') != 'NACIONAL' else ""
+                st.write(f"**{r['channel']}{mkt_suff}**: {r['program_name']} ({r['start_time']}-{r['end_time']}) | *{format_days(r['days_of_week'], st.session_state.lang)}*")
             with col_r2:
                 if st.button("🗑️", key=f"del_rule_{i}"):
                     st.session_state.temp_rules.pop(i)
@@ -1015,6 +1215,51 @@ if user['role'] == "client":
             render_monitoring_form()
         else:
             st.header(L['header_list'])
+            
+            # --- DEEP-LINKED MENTION PLAYER ---
+            if "mention_id" in st.query_params:
+                deep_mention_id = st.query_params["mention_id"]
+                if isinstance(deep_mention_id, list): deep_mention_id = deep_mention_id[0]
+                try:
+                    mentions_res = requests.get(f"{API_BASE_URL}/mentions")
+                    if mentions_res.status_code == 200:
+                        all_mentions_list = mentions_res.json()
+                        deep_m = next((m for m in all_mentions_list if str(m['id']) == str(deep_mention_id)), None)
+                        if deep_m:
+                            st.markdown("""
+                                <div style='background-color: #0F21FD; color: white; padding: 12px 18px; border-radius: 8px 8px 0 0; font-weight: bold; margin-bottom: 0;'>
+                                    ▶️ Clipe de Vídeo Recomendado (Acesso Seguro via Relatório)
+                                </div>
+                            """, unsafe_allow_html=True)
+                            with st.container(border=True):
+                                st.write(f"**Programa:** {deep_m.get('program_name')} ({deep_m.get('channel')})")
+                                st.write(f"⏰ **Timestamp:** {deep_m.get('occurrence_time')[:19].replace('T', ' ')}")
+                                
+                                highlighted_text = deep_m['transcription']
+                                st.markdown(f"""
+                                    <div style='background-color: #f1f5f9; padding: 12px; border-radius: 6px; border-left: 4px solid #0F21FD; margin-bottom: 12px; font-size: 1rem; color: #1e293b;'>
+                                        {highlighted_text}
+                                    </div>
+                                """, unsafe_allow_html=True)
+                                
+                                video_clip_url = deep_m.get('video_url')
+                                if video_clip_url:
+                                    local_video_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", video_clip_url))
+                                    if os.path.exists(local_video_path):
+                                        with open(local_video_path, "rb") as video_file:
+                                            st.video(video_file.read())
+                                    else:
+                                        st.video("https://www.w3schools.com/html/mov_bbb.mp4")
+                                
+                                if st.button("Fechar Player de Destaque", type="secondary"):
+                                    del st.query_params["mention_id"]
+                                    if "set_id" in st.query_params:
+                                        del st.query_params["set_id"]
+                                    st.rerun()
+                                st.write("---")
+                except Exception as e:
+                    pass
+
             if st.button(L['btn_new_set'], type="primary"):
                 st.session_state.show_form = True
                 st.session_state.edit_id = None
@@ -1046,7 +1291,8 @@ if user['role'] == "client":
                                     if s.get('rules'):
                                         st.write("**Canais & Horários:**" if st.session_state.lang == "PT" else ("Channels & Times:" if st.session_state.lang == "EN" else "Canales & Horarios:"))
                                         for r in s['rules']:
-                                            st.write(f"- {r['channel']}: {r['program_name']} ({r['start_time']}-{r['end_time']}) | *{format_days(r['days_of_week'], st.session_state.lang)}*")
+                                            mkt_suff = f" ({r['market']})" if r.get('market') and r.get('market') != 'NACIONAL' else ""
+                                            st.write(f"- {r['channel']}{mkt_suff}: {r['program_name']} ({r['start_time']}-{r['end_time']}) | *{format_days(r['days_of_week'], st.session_state.lang)}*")
                                 with col_s2:
                                     if st.button(f"✏️ Edit", key=f"edit_{s['id']}"):
                                         st.session_state.edit_id = s['id']
@@ -1176,7 +1422,11 @@ if user['role'] == "client":
                                                     st.caption(f"📈 **Audiência Share:** {m.get('audience_share', 0)/100:.2f}%")
                                                     
                                             if m.get('video_url'):
-                                                local_video_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "samplevideo.mp4"))
+                                                target_path = m['video_url']
+                                                local_video_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", target_path))
+                                                if not os.path.exists(local_video_path):
+                                                    local_video_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "samplevideo.mp4"))
+                                                    
                                                 if os.path.exists(local_video_path):
                                                     try:
                                                         with open(local_video_path, "rb") as video_file:
@@ -1396,73 +1646,286 @@ if user['role'] == "client":
     elif page == "billing":
         st.header(L['nav_billing'])
         
+        # 1. Fetch User Sets to calculate current month estimate
+        try:
+            sets_res = requests.get(f"{API_BASE_URL}/sets", params={"user_id": user['id']})
+            user_sets = sets_res.json() if sets_res.status_code == 200 else []
+        except:
+            user_sets = []
+            
+        active_user_sets = [s for s in user_sets if s.get("status") in ["active", "approved"]]
+        
+        # Calculate current month estimated cost
+        estimate_cents = 0
+        total_active_mins = 0
+        for s in active_user_sets:
+            mins = s.get("total_minutes_estimate", 0)
+            total_active_mins += mins
+            cost = mins * 10
+            if s.get("audience_data_enabled"):
+                cost = int(cost * 1.2) # +20% for Premium Audience
+            estimate_cents += cost
+            
+        credit_limit_cents = user.get('credit_limit', 0)
+        
+        if credit_limit_cents > 0:
+            pct_used = min(1.0, estimate_cents / credit_limit_cents)
+        else:
+            pct_used = 0.0
+
+        # Fetch Invoices
+        try:
+            invoices_res = requests.get(f"{API_BASE_URL}/invoices", params={"user_id": user['id']})
+            invoices = invoices_res.json() if invoices_res.status_code == 200 else []
+        except:
+            invoices = []
+
+        # Determine account compliance
+        has_overdue = any(inv.get("status") == "overdue" for inv in invoices)
+        has_pending = any(inv.get("status") == "pending" for inv in invoices)
+        
+        if user.get("is_blocked_access"):
+            status_text = "BLOQUEADO"
+            status_color = "#dc2626"
+            status_badge = "🔴 ACESSO BLOQUEADO"
+        elif has_overdue:
+            status_text = "PENDÊNCIA FINANCEIRA"
+            status_color = "#dc2626"
+            status_badge = "🔴 FATURA OVERDUE"
+        elif has_pending:
+            status_text = "FATURA EM ABERTO"
+            status_color = "#ca8a04"
+            status_badge = "🟡 EM ABERTO"
+        else:
+            status_text = "ADIMPLENTE / LIBERADO"
+            status_color = "#16a34a"
+            status_badge = "🟢 ADIMPLENTE"
+
+        # KPI Header Cards
         st.markdown(f"""
-            <div style='background-color: #FAFAFA; padding: 20px; border-radius: 8px; border: 1px solid #E8E8EE; margin-bottom: 20px;'>
-                <h4 style='margin:0 0 10px 0; color:#0F21FD;'>Resumo Financeiro da Conta</h4>
-                <div style='display: flex; gap: 40px;'>
-                    <div>
-                        <div style='font-size:0.8rem; color:#64748b;'>LIMITE DE CRÉDITO DISPONÍVEL</div>
-                        <div style='font-size:1.8rem; font-weight:700; color:#000;'>R$ {user.get('credit_limit', 0)/100:.2f}</div>
+            <div style='background-color: #F8FAFC; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 20px;'>
+                <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;'>
+                    <span style='font-size: 1.1rem; font-weight: 700; color: #0F21FD;'>💳 Resumo de Crédito & Faturamento</span>
+                    <span style='background-color: {status_color}15; color: {status_color}; border: 1px solid {status_color}; font-weight: 700; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;'>{status_badge}</span>
+                </div>
+                <div style='display: flex; gap: 30px; flex-wrap: wrap;'>
+                    <div style='flex: 1; min-width: 200px;'>
+                        <div style='font-size: 0.8rem; color: #64748B; font-weight: 600; text-transform: uppercase;'>Limite Total de Crédito</div>
+                        <div style='font-size: 1.6rem; font-weight: 800; color: #0F172A;'>R$ {credit_limit_cents/100:.2f}</div>
+                        <div style='font-size: 0.75rem; color: #64748B; margin-top: 2px;'>Comprometido: R$ {estimate_cents/100:.2f} ({int(pct_used*100)}%)</div>
                     </div>
-                    <div>
-                        <div style='font-size:0.8rem; color:#64748b;'>STATUS DE ACESSO</div>
-                        <div style='font-size:1.8rem; font-weight:700; color:{"green" if not user.get("is_blocked_access") else "red"};'>
-                            {"ATIVO / LIBERADO" if not user.get("is_blocked_access") else "BLOQUEADO"}
-                        </div>
+                    <div style='flex: 1; min-width: 200px;'>
+                        <div style='font-size: 0.8rem; color: #64748B; font-weight: 600; text-transform: uppercase;'>Consumo Estimado (Ciclo Atual D+0)</div>
+                        <div style='font-size: 1.6rem; font-weight: 800; color: #0F21FD;'>R$ {estimate_cents/100:.2f}</div>
+                        <div style='font-size: 0.75rem; color: #64748B; margin-top: 2px;'>Baseado em {total_active_mins} min/mês em {len(active_user_sets)} set(s)</div>
+                    </div>
+                    <div style='flex: 1; min-width: 200px;'>
+                        <div style='font-size: 0.8rem; color: #64748B; font-weight: 600; text-transform: uppercase;'>Crédito Livre Restante</div>
+                        <div style='font-size: 1.6rem; font-weight: 800; color: #16A34A;'>R$ {max(0, credit_limit_cents - estimate_cents)/100:.2f}</div>
+                        <div style='font-size: 0.75rem; color: #64748B; margin-top: 2px;'>Disponível para novos conjuntos</div>
                     </div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        
+
+        st.progress(pct_used)
         st.write("---")
-        st.subheader(L['header_billing'])
-        
-        try:
-            invoices_res = requests.get(f"{API_BASE_URL}/invoices", params={"user_id": user['id']})
-            invoices = invoices_res.json() if invoices_res.status_code == 200 else []
-            
-            if not invoices:
-                st.info("Nenhuma fatura de serviço foi emitida para esta conta.")
+
+        # 2. Current Month Detailed Breakdown Expander
+        with st.expander("📊 **Ver Extrato de Consumo do Ciclo Atual (Mês Vigente)**", expanded=False):
+            if not active_user_sets:
+                st.info("Nenhum conjunto ativo gerando consumo no ciclo atual.")
             else:
-                invoice_data = []
-                status_translation = {
-                    "pending": "Pendente",
-                    "paid": "Pago",
-                    "overdue": "Atrasado"
-                }
-                for inv in invoices:
-                    due_date = inv['due_date']
-                    amount_fmt = f"R$ {inv['amount']/100:.2f}"
-                    status_fmt = status_translation.get(inv['status'], inv['status']).upper()
-                    invoice_data.append({
-                        "Período de Referência": inv['billing_period'],
-                        L['th_amount']: amount_fmt,
-                        L['th_due']: due_date,
-                        L['th_status']: status_fmt,
-                        "PDF / Boleto": inv.get('pdf_url', 'N/A')
+                breakdown_rows = []
+                for s in active_user_sets:
+                    mins = s.get("total_minutes_estimate", 0)
+                    base_cost = (mins * 10) / 100
+                    has_aud = s.get("audience_data_enabled")
+                    aud_cost = (base_cost * 0.20) if has_aud else 0.0
+                    subtotal = base_cost + aud_cost
+                    breakdown_rows.append({
+                        "Conjunto de Monitoramento": s['name'],
+                        "Status": s['status'].upper(),
+                        "Minutos / Mês": f"{mins} min",
+                        "Custo Base (R$)": f"R$ {base_cost:.2f}",
+                        "Audiência Premium": f"R$ {aud_cost:.2f}" if has_aud else "N/A",
+                        "Subtotal Estimado": f"R$ {subtotal:.2f}"
                     })
-                
-                df_invoices = pd.DataFrame(invoice_data)
-                st.dataframe(df_invoices, use_container_width=True)
-        except Exception as e:
-            st.error(f"Erro ao carregar histórico de faturamento: {e}")
+                st.dataframe(pd.DataFrame(breakdown_rows), use_container_width=True)
+
+        st.write("---")
+        st.subheader("📄 Histórico de Faturas Emitidas")
+
+        if not invoices:
+            st.info("Nenhuma fatura consolidada emitida até o momento.")
+        else:
+            status_labels = {
+                "paid": ("PAGO", "#16a34a", "#dcfce7"),
+                "pending": ("PENDENTE", "#b45309", "#fef3c7"),
+                "overdue": ("ATRASADO", "#b91c1c", "#fee2e2")
+            }
+            
+            for inv in invoices:
+                inv_id = inv['id']
+                amount_fmt = f"R$ {inv['amount']/100:.2f}"
+                st_key = inv.get("status", "pending")
+                s_label, s_fg, s_bg = status_labels.get(st_key, ("PENDENTE", "#b45309", "#fef3c7"))
+
+                with st.container(border=True):
+                    col_i1, col_i2, col_i3, col_i4 = st.columns([2, 2, 2, 3])
+                    
+                    with col_i1:
+                        st.markdown(f"**Período:** `{inv['billing_period']}`")
+                        st.markdown(f"🗓️ **Vencimento:** `{inv['due_date']}`")
+                        
+                    with col_i2:
+                        st.markdown(f"### {amount_fmt}")
+                        
+                    with col_i3:
+                        st.markdown(
+                            f"<div style='background-color:{s_bg}; color:{s_fg}; font-weight:bold; padding:6px 12px; border-radius:6px; display:inline-block; font-size:0.85rem; margin-top:5px;'>{s_label}</div>",
+                            unsafe_allow_html=True
+                        )
+                        
+                    with col_i4:
+                        if st_key == "paid":
+                            st.markdown("✅ **Fatura Quitada**")
+                            pdf_link = inv.get('pdf_url') or "#"
+                            st.markdown(f"<a href='{pdf_link}' target='_blank' style='text-decoration:none;'><button style='background-color:#0F21FD; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;'>📄 Recibo PDF</button></a>", unsafe_allow_html=True)
+                        else:
+                            btn_col1, btn_col2 = st.columns(2)
+                            with btn_col1:
+                                pdf_link = inv.get('pdf_url') or "#"
+                                st.markdown(f"<a href='{pdf_link}' target='_blank' style='text-decoration:none;'><button style='background-color:#f8fafc; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-size:0.8rem; font-weight:bold; cursor:pointer;'>📄 Boleto PDF</button></a>", unsafe_allow_html=True)
+                            with btn_col2:
+                                show_pix_key = f"show_pix_{inv_id}"
+                                if st.button("📱 Copiar PIX", key=f"pix_btn_{inv_id}"):
+                                    st.session_state[show_pix_key] = not st.session_state.get(show_pix_key, False)
+
+                            if st.session_state.get(f"show_pix_{inv_id}"):
+                                pix_code = f"00020126580014br.gov.bcb.pix0136mentions-ondemand-kantar-{inv_id[:8]}5204000053039865405{inv['amount']}5802BR5918KANTAR IBOPE MEDIA6009SAO PAULO62070503***6304"
+                                st.info(f"**Chave PIX Copia e Cola:**")
+                                st.code(pix_code, language="text")
+                                
+                                if st.button("⚡ Simular Pagamento Instantâneo", key=f"pay_instant_{inv_id}", type="primary"):
+                                    try:
+                                        res = requests.patch(f"{API_BASE_URL}/invoices/{inv_id}/pay")
+                                        if res.status_code == 200:
+                                            st.success("Pagamento confirmado com sucesso via PIX!")
+                                            st.session_state[f"show_pix_{inv_id}"] = False
+                                            st.rerun()
+                                        else:
+                                            st.error("Erro ao registrar pagamento.")
+                                    except Exception as e:
+                                        st.error(f"Erro de conexão: {e}")
 
     elif page == "profile":
         st.header(L['nav_profile'])
-        st.write(f"**Name:** {user['full_name']}")
-        st.write(f"**Email:** {user['email']}")
-        st.write(f"**Role:** {user['role'].upper()}")
+        
+        # Ensure latest user data from DB
+        refresh_user()
+        user = st.session_state.user
+
+        b_info = user.get("billing_info", {}) or {}
+        razao_social = b_info.get("razao_social", user.get("company_name", "N/A"))
+        cnpj_val = b_info.get("cnpj", "N/A")
+        phone_val = b_info.get("telefone") or b_info.get("phone", "Não informado")
+        address_val = b_info.get("endereco") or b_info.get("address", "Não informado")
+        
+        # Display Toast / Success feedback if just saved
+        if st.session_state.get("profile_saved_toast"):
+            st.toast("✅ Perfil e dados de contato atualizados com sucesso!", icon="🎉")
+            st.success("✅ Perfil e dados de contato atualizados com sucesso!")
+            del st.session_state["profile_saved_toast"]
+
+        st.markdown("""
+            <div style='background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;'>
+                <span style='color: #64748b; font-size: 0.85rem;'>ℹ️ <b>Nota Fiscal & Contrato:</b> A Razão Social, CNPJ e E-mail são vinculados aos contratos comerciais e à emissão de Notas Fiscais. Para alterá-los, contate o Time Comercial Kantar.</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        col_prof1, col_prof2 = st.columns(2)
+        
+        with col_prof1:
+            st.subheader("🔒 Dados Jurídicos (Somente Leitura)")
+            st.text_input("Razão Social / Empresa", value=razao_social, disabled=True)
+            st.text_input("CNPJ", value=cnpj_val, disabled=True)
+            st.text_input("E-mail de Login", value=user.get("email", ""), disabled=True)
+            
+        with col_prof2:
+            st.subheader("👤 Dados de Contato e Endereço")
+            
+            if "edit_profile_mode" not in st.session_state:
+                st.session_state.edit_profile_mode = False
+
+            if not st.session_state.edit_profile_mode:
+                # View Mode (Cards & Current Info Display)
+                with st.container(border=True):
+                    st.markdown(f"**Contato Principal:** `{user.get('full_name', 'N/A')}`")
+                    st.markdown(f"📞 **Telefone / WhatsApp:** `{phone_val}`")
+                    st.markdown(f"📍 **Endereço de Cobrança:**\n```\n{address_val}\n```")
+                    
+                    st.write(" ")
+                    if st.button("✏️ Editar Dados de Contato", type="primary", use_container_width=True):
+                        st.session_state.edit_profile_mode = True
+                        st.rerun()
+            else:
+                # Edit Mode (Hidden form under Editar button)
+                with st.container(border=True):
+                    st.markdown("#### ✏️ Alterar Contato & Endereço")
+                    
+                    with st.form("form_edit_profile"):
+                        edit_name = st.text_input("Nome do Contato Principal", value=user.get("full_name", ""))
+                        edit_phone = st.text_input("Telefone / WhatsApp", value="" if phone_val == "Não informado" else phone_val)
+                        edit_address = st.text_area("Endereço de Cobrança / Correspondência", value="" if address_val == "Não informado" else address_val)
+                        
+                        btn_save_prof = st.form_submit_button("💾 Salvar Alterações de Perfil", type="primary", use_container_width=True)
+                        
+                        if btn_save_prof:
+                            payload = {
+                                "full_name": edit_name.strip(),
+                                "phone": edit_phone.strip(),
+                                "address": edit_address.strip()
+                            }
+                            try:
+                                res = requests.patch(f"{API_BASE_URL}/user/{user['id']}/profile", json=payload)
+                                if res.status_code == 200:
+                                    st.session_state.user = res.json()
+                                    st.session_state.profile_saved_toast = True
+                                    st.session_state.edit_profile_mode = False
+                                    st.rerun()
+                                else:
+                                    st.error(f"Erro ao atualizar perfil: {res.text}")
+                            except Exception as e:
+                                st.error(f"Erro de conexão com o servidor: {e}")
+
+                    if st.button("❌ Cancelar Edição", key="cancel_edit_prof"):
+                        st.session_state.edit_profile_mode = False
+                        st.rerun()
 
     elif page == "docs":
         st.header(L['header_docs'])
         
-        status_map = {
-            "missing": (L['lbl_docs_missing'], "orange"),
-            "pending_review": (L['lbl_docs_sent'], "blue"),
-            "verified": (L['lbl_docs_verified'], "green")
-        }
+        uploaded_docs = user.get("documents", {}) or {}
+        has_certidao = "certidao" in uploaded_docs
+        has_contrato = "contrato" in uploaded_docs
+        
         current_status = user.get("document_status", "missing")
-        status_label, status_color = status_map.get(current_status, (L['lbl_docs_missing'], "orange"))
+        if not uploaded_docs or (not has_certidao and not has_contrato):
+            current_status = "missing"
+        elif has_certidao and has_contrato:
+            if current_status != "verified":
+                current_status = "pending_review"
+        else:
+            current_status = "partial"
+
+        status_map = {
+            "missing": (L['lbl_docs_missing'], "#dc2626"),
+            "partial": (L.get('lbl_docs_partial', '⚠️ Envio Parcial (Incompleto)'), "#ca8a04"),
+            "pending_review": (L['lbl_docs_sent'], "#2563eb"),
+            "verified": (L['lbl_docs_verified'], "#16a34a")
+        }
+        status_label, status_color = status_map.get(current_status, (L['lbl_docs_missing'], "#dc2626"))
         
         st.markdown(f"#### Status Atual: <span style='color: {status_color}; font-weight: bold;'>{status_label}</span>", unsafe_allow_html=True)
         
@@ -1565,13 +2028,38 @@ elif user['role'] == "operator":
                         with st.container(border=True):
                             st.write(f"### 📺 {s['name']}")
                             st.write(f"👤 **Cliente:** {s.get('client_name', 'N/A')} ({s.get('client_company', 'N/A')})")
-                            st.write(f"⏱️ **Tempo Estimado:** {s.get('total_minutes', 0)} min")
-                            st.write(f"💳 **Limite do Cliente:** R$ {s.get('client_credit_limit', 0)/100:.2f}")
-                            if st.button(f"Approve Set {s['id']}", key=f"app_s_{s['id']}", type="primary"):
+                            
+                            # Document status alert
+                            doc_status = s.get('client_document_status', 'missing')
+                            if doc_status == "verified":
+                                st.markdown("<span style='color:#16a34a; font-weight:bold;'>🟢 Documentos Verificados / Homologados</span>", unsafe_allow_html=True)
+                            elif doc_status == "pending_review":
+                                st.markdown("<span style='color:#2563eb; font-weight:bold;'>🔵 Documentos Enviados 100% (Aguardando Análise)</span>", unsafe_allow_html=True)
+                            elif doc_status == "partial":
+                                st.markdown("<span style='color:#ca8a04; font-weight:bold;'>🟡 Envio Parcial / Incompleto (1 de 2 enviado)</span>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("<span style='color:#dc2626; font-weight:bold;'>🔴 PENDÊNCIA: Documentação ausente</span>", unsafe_allow_html=True)
+                                
+                            # Rules details
+                            chan_count = s.get('channels_count', 0)
+                            prog_count = s.get('programs_count', 0)
+                            freq_count = s.get('frequency_weekly_count', 0)
+                            st.write(f"📡 **Regras:** {chan_count} emissora(s), {prog_count} programa(s), {freq_count} vez(es) por semana")
+                            
+                            # Estimated minutes
+                            st.write(f"⏱️ **Tempo Estimado:** {s.get('total_minutes', 0)} minutos por mês")
+                            
+                            credit_limit_val = s.get('client_credit_limit')
+                            if credit_limit_val is None:
+                                credit_limit_val = 0
+                            st.write(f"💳 **Limite do Cliente:** R$ {credit_limit_val/100:.2f}")
+                            
+                            btn_lbl = f"{L.get('btn_approve_set', 'Aprovar')} '{s['name']}'"
+                            if st.button(btn_lbl, key=f"app_s_{s['id']}", type="primary"):
                                 requests.patch(f"{API_BASE_URL}/sets/{s['id']}/status", params={"status": "active"})
                                 st.rerun()
-            except:
-                st.error("Error loading pending sets")
+            except Exception as e:
+                st.error(f"Error loading pending sets: {e}")
 
     elif page == "health":
         st.header(L['op_nav_health'])
@@ -1590,6 +2078,56 @@ elif user['role'] == "operator":
                 st.write("---")
                 st.subheader("Processamentos em Execução")
                 st.info(f"Dispatcher: ATIVO | Instâncias em execução: {h.get('running_now', 0)}")
+                
+                st.write("---")
+                st.subheader("🗓️ Fila de Tarefas Assíncronas (Task Scheduler)")
+                st.markdown("As tarefas de transcrição (Kantar *Transcription Façade*) e envio de relatórios diários D+1 são enfileiradas de forma ordenada (FIFO) e processadas em lote para otimizar o uso de recursos e evitar sobrecarga em tempo real.")
+                
+                col_btn_run, col_spacing = st.columns([2, 1])
+                with col_btn_run:
+                    if st.button("⚡ Executar Fila de Tarefas (Simular Processamento da Madrugada)", type="primary", use_container_width=True):
+                        try:
+                            run_res = requests.post(f"{API_BASE_URL}/operator/tasks/run")
+                            if run_res.status_code == 200:
+                                count = run_res.json().get("processed_tasks", 0)
+                                st.success(f"Madrugada Simulada com Sucesso! {count} tarefas da fila processadas (transcrições executadas, clips gerados e relatórios D+1 enviados via AgentMail)!")
+                                st.rerun()
+                            else:
+                                st.error(f"Erro ao processar fila: {run_res.text}")
+                        except Exception as ex:
+                            st.error(f"Erro de conexão: {ex}")
+                
+                try:
+                    tasks_res = requests.get(f"{API_BASE_URL}/operator/tasks")
+                    if tasks_res.status_code == 200:
+                        tasks_list = tasks_res.json()
+                        if not tasks_list:
+                            st.info("Nenhuma tarefa agendada na fila no momento.")
+                        else:
+                            st.write("#### Fila FIFO no PostgreSQL:")
+                            
+                            formatted_tasks = []
+                            for t in tasks_list:
+                                payload = t.get("payload", {}) or {}
+                                details_str = ""
+                                if t["task_type"] == "transcribe_and_clip":
+                                    market_str = f" [{payload.get('market')}]" if payload.get('market') else ""
+                                    details_str = f"{payload.get('channel')}{market_str} - {payload.get('program_name')} ({payload.get('broadcast_date')})"
+                                elif t["task_type"] == "send_daily_report":
+                                    details_str = f"Relatório de {payload.get('broadcast_date')}"
+                                    
+                                formatted_tasks.append({
+                                    "Tipo de Tarefa": "Busca & Recorte" if t["task_type"] == "transcribe_and_clip" else "Relatório D+1",
+                                    "Agendado Para": t["scheduled_for"].replace("T", " ")[:19],
+                                    "Status": t["status"].upper(),
+                                    "Detalhes": details_str
+                                })
+                            
+                            st.dataframe(formatted_tasks, use_container_width=True)
+                    else:
+                        st.error("Erro ao carregar fila de tarefas do banco")
+                except Exception as ex:
+                    st.error(f"Erro ao obter tarefas: {ex}")
             else:
                 st.error("Erro ao carregar dados de saúde")
         except Exception as e:
@@ -1615,7 +2153,8 @@ elif user['role'] == "operator":
                                 
                                 doc_status_labels = {
                                     "missing": "❌ Sem Documentos",
-                                    "pending_review": "📁 Pendente de Análise",
+                                    "partial": "⚠️ Envio Parcial (Incompleto)",
+                                    "pending_review": "📁 Documentos Enviados (100% - Pendente de Análise)",
                                     "verified": "✅ Documentação Verificada"
                                 }
                                 st.write(f"📄 **Status de Documentos:** **{doc_status_labels.get(c.get('document_status'), 'Sem Documentos')}**")
@@ -1625,7 +2164,9 @@ elif user['role'] == "operator":
                                     st.write("**Arquivos Enviados:**")
                                     for doc_type, info in docs.items():
                                         label = "Certidão / CNPJ" if doc_type == "certidao" else "Contrato Social"
-                                        st.write(f"- {label}: `{info.get('filename')}` (Enviado em: {info.get('uploaded_at', '')[:19].replace('T', ' ')})")
+                                        fname = info.get('filename')
+                                        doc_url = f"{API_BASE_URL}/user/document/{c['id']}/{fname}"
+                                        st.markdown(f"- {label}: `{fname}` [📄 Baixar / Visualizar]({doc_url})")
                             
                             with col_c2:
                                 if c['is_blocked_access']:
@@ -1653,5 +2194,163 @@ elif user['role'] == "operator":
             st.error(f"Erro de conexão: {e}")
 
 elif user['role'] == "admin":
-    st.header("Admin Panel")
-    st.info("Management modules under construction for v1.4.0")
+    if page == "logs":
+        st.header(L['adm_nav_logs'])
+        st.markdown("Visão consolidada de auditoria sobre todas as ações executadas pelos operadores da plataforma.")
+        
+        try:
+            logs_res = requests.get(f"{API_BASE_URL}/admin/logs")
+            if logs_res.status_code == 200:
+                logs_data = logs_res.json()
+                if not logs_data:
+                    st.info("Nenhum log de auditoria registrado até o momento.")
+                else:
+                    filter_act = st.selectbox("Filtrar por Ação", ["Todas", "APPROVE_CLIENT", "UPDATE_CREDIT_LIMIT", "BLOCK_USER", "UNBLOCK_USER", "approve_set", "reprocess_set"])
+                    
+                    filtered_logs = []
+                    for log in logs_data:
+                        act_code = log.get("action", "")
+                        if filter_act != "Todas" and act_code != filter_act:
+                            continue
+                            
+                        # Action formatting
+                        action_badges = {
+                            "APPROVE_CLIENT": "🟢 APROVAÇÃO CLIENTE",
+                            "UPDATE_CREDIT_LIMIT": "🔵 AJUSTE CRÉDITO",
+                            "BLOCK_USER": "🔴 BLOQUEIO",
+                            "UNBLOCK_USER": "🟢 DESBLOQUEIO",
+                            "approve_set": "📺 APROVAÇÃO SET",
+                            "reprocess_set": "🔄 REPROCESSAMENTO"
+                        }
+                        badge_label = action_badges.get(act_code, act_code.upper())
+                        
+                        op_name = log.get("operator_name") or log.get("operator", {}).get("full_name", "Operador Interno")
+                        ts_str = log.get("timestamp", "")[:19].replace("T", " ")
+                        
+                        filtered_logs.append({
+                            "Data / Hora": ts_str,
+                            "Operador": op_name,
+                            "Ação Executada": badge_label,
+                            "Justificativa / Detalhes": log.get("justification") or "Sem justificativa registrada"
+                        })
+                        
+                    if not filtered_logs:
+                        st.info("Nenhum log encontrado para o filtro selecionado.")
+                    else:
+                        st.dataframe(pd.DataFrame(filtered_logs), use_container_width=True)
+            else:
+                st.error("Erro ao carregar logs de auditoria")
+        except Exception as e:
+            st.error(f"Erro de conexão: {e}")
+
+    elif page == "users":
+        st.header(L['adm_nav_users'])
+        
+        with st.expander("➕ **Cadastrar Novo Membro da Equipe Interna (Operador / Admin)**", expanded=False):
+            with st.form("form_add_internal_user"):
+                col_u1, col_u2 = st.columns(2)
+                with col_u1:
+                    new_full_name = st.text_input("Nome Completo")
+                    new_email = st.text_input("E-mail Corporativo (@ibope.com / @kantar.com)")
+                with col_u2:
+                    new_role = st.selectbox("Perfil de Acesso", ["operator", "admin"], format_func=lambda x: "Operador de Mídia" if x == "operator" else "Administrador do Sistema")
+                    new_password = st.text_input("Senha Inicial", type="password", value="1234")
+                    
+                btn_save_int_user = st.form_submit_button("➕ Criar Acesso Interno", type="primary", use_container_width=True)
+                if btn_save_int_user:
+                    if not new_full_name or not new_email or not new_password:
+                        st.warning("Preencha todos os campos obrigatórios.")
+                    else:
+                        payload = {
+                            "email": new_email.strip().lower(),
+                            "password": new_password,
+                            "full_name": new_full_name.strip(),
+                            "company_name": "Kantar IBOPE Media",
+                            "role": new_role,
+                            "status": "approved",
+                            "credit_limit": 0
+                        }
+                        try:
+                            res = requests.post(f"{API_BASE_URL}/admin/user", json=payload)
+                            if res.status_code in [200, 201]:
+                                st.success(f"Novo usuário **{new_full_name}** ({new_role.upper()}) criado com sucesso!")
+                                st.rerun()
+                            else:
+                                st.error(f"Erro ao criar usuário: {res.text}")
+                        except Exception as e:
+                            st.error(f"Erro de conexão: {e}")
+
+        st.write("---")
+        st.subheader("👥 Equipe Interna Cadastrada")
+        try:
+            users_res = requests.get(f"{API_BASE_URL}/admin/users")
+            if users_res.status_code == 200:
+                internal_users = users_res.json()
+                if not internal_users:
+                    st.info("Nenhum usuário interno cadastrado.")
+                else:
+                    formatted_users = []
+                    for u in internal_users:
+                        formatted_users.append({
+                            "Nome": u.get("full_name", "N/A"),
+                            "E-mail Corporativo": u.get("email"),
+                            "Perfil": u.get("role").upper(),
+                            "Status": u.get("status").upper()
+                        })
+                    st.dataframe(pd.DataFrame(formatted_users), use_container_width=True)
+            else:
+                st.error("Erro ao carregar equipe interna")
+        except Exception as e:
+            st.error(f"Erro de conexão: {e}")
+
+    elif page == "config":
+        st.header(L['adm_nav_config'])
+        st.markdown("Parametrização global de regras operacionais, limites de crédito e custos de monitoramento.")
+        
+        # Display Toast if config was just saved
+        if st.session_state.get("config_saved_toast"):
+            st.toast("✅ Parâmetros globais do sistema salvos com sucesso!", icon="🎉")
+            st.success("✅ Parâmetros globais do sistema salvos e aplicados no PostgreSQL!")
+            del st.session_state["config_saved_toast"]
+
+        # Fetch current config from API
+        curr_cfg = {
+            "default_credit_limit": 50.0,
+            "price_per_minute": 0.10,
+            "audience_multiplier_pct": 20.0,
+            "clip_context_seconds": 15
+        }
+        try:
+            cfg_res = requests.get(f"{API_BASE_URL}/admin/config")
+            if cfg_res.status_code == 200:
+                curr_cfg = cfg_res.json()
+        except Exception as e:
+            st.error(f"Erro ao obter configurações do servidor: {e}")
+
+        with st.form("form_global_config"):
+            st.subheader("⚙️ Parâmetros do Sistema (Salvos no PostgreSQL)")
+            col_cfg1, col_cfg2 = st.columns(2)
+            with col_cfg1:
+                cfg_default_credit = st.number_input("Limite Inicial Padrão para Novos Clientes (R$)", value=float(curr_cfg.get("default_credit_limit", 50.0)), step=10.0)
+                cfg_price_per_min = st.number_input("Preço Base por Minuto Monitorado (R$)", value=float(curr_cfg.get("price_per_minute", 0.10)), step=0.01, format="%.2f")
+            with col_cfg2:
+                cfg_aud_multiplier = st.number_input("Adicional por Módulo de Audiência Premium (%)", value=float(curr_cfg.get("audience_multiplier_pct", 20.0)), step=5.0)
+                cfg_clip_offset = st.number_input("Contexto Padrão do Clipe (Segundos)", value=int(curr_cfg.get("clip_context_seconds", 15)), step=5)
+                
+            btn_save_config = st.form_submit_button("💾 Salvar Parâmetros Globais", type="primary", use_container_width=True)
+            if btn_save_config:
+                payload = {
+                    "default_credit_limit": float(cfg_default_credit),
+                    "price_per_minute": float(cfg_price_per_min),
+                    "audience_multiplier_pct": float(cfg_aud_multiplier),
+                    "clip_context_seconds": int(cfg_clip_offset)
+                }
+                try:
+                    res = requests.post(f"{API_BASE_URL}/admin/config", json=payload)
+                    if res.status_code in [200, 201]:
+                        st.session_state.config_saved_toast = True
+                        st.rerun()
+                    else:
+                        st.error(f"Erro ao salvar parâmetros: {res.text}")
+                except Exception as e:
+                    st.error(f"Erro de conexão com o servidor: {e}")

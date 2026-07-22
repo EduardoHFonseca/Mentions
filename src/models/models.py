@@ -61,6 +61,8 @@ class MonitoringRule(Base):
     start_time = Column(Time, nullable=False)
     end_time = Column(Time, nullable=False)
     days_of_week = Column(ARRAY(Integer), nullable=False)  # [1, 2, 3, 4, 5]
+    grid_type = Column(String, default="national") # "national", "regional"
+    market = Column(String, default="NACIONAL") # "NACIONAL", "SP", "RJ"
     created_at = Column(DateTime, default=datetime.utcnow)
 
     monitoring_set = relationship("MonitoringSet", back_populates="rules")
@@ -136,6 +138,7 @@ class ProgrammingGrid(Base):
     end_time = Column(Time, nullable=True)
     program_name = Column(String, nullable=False)
     description = Column(String, nullable=True)
+    market = Column(String, default="NACIONAL", index=True) # "NACIONAL", "SP", "RJ"
     is_live = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -160,3 +163,17 @@ class OperatorLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     operator = relationship("User")
+
+class TaskQueue(Base):
+    __tablename__ = "task_queue"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    monitoring_set_id = Column(UUID(as_uuid=True), ForeignKey("monitoring_sets.id"), nullable=False)
+    task_type = Column(String, nullable=False) # "transcribe_and_clip", "send_daily_report"
+    scheduled_for = Column(DateTime, nullable=False)
+    status = Column(String, default="pending") # "pending", "processing", "completed", "failed"
+    payload = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    monitoring_set = relationship("MonitoringSet")

@@ -220,27 +220,40 @@ def seed_grid():
         else:
             day_type = "sunday"
 
-        for channel, day_schedules in schedule_data.items():
-            programs = day_schedules[day_type]
-            for start_str, end_str, prog_name in programs:
-                s_time = datetime.strptime(start_str, "%H:%M:%S").time()
-                e_time = datetime.strptime(end_str, "%H:%M:%S").time() if end_str else None
-                
-                grid_entry = ProgrammingGrid(
-                    channel=channel,
-                    broadcast_date=current_date,
-                    start_time=s_time,
-                    end_time=e_time,
-                    program_name=prog_name,
-                    description=f"Exibição real de {prog_name} na rede {channel}.",
-                    is_live=False
-                )
-                records_to_add.append(grid_entry)
+        for market in ["NACIONAL", "SP", "RJ"]:
+            for channel, day_schedules in schedule_data.items():
+                programs = day_schedules[day_type]
+                for start_str, end_str, prog_name in programs:
+                    s_time = datetime.strptime(start_str, "%H:%M:%S").time()
+                    e_time = datetime.strptime(end_str, "%H:%M:%S").time() if end_str else None
+                    
+                    # Apply local regional variations
+                    actual_prog_name = prog_name
+                    if market == "SP":
+                        if channel == "GLOBO" and prog_name == "Praça TV 1ª Edição":
+                            actual_prog_name = "SP1"
+                    elif market == "RJ":
+                        if channel == "GLOBO" and prog_name == "Praça TV 1ª Edição":
+                            actual_prog_name = "RJ1"
+                        elif channel == "RECORD" and prog_name == "Balanço Geral SP":
+                            actual_prog_name = "Balanço Geral RJ"
+                    
+                    grid_entry = ProgrammingGrid(
+                        channel=channel,
+                        broadcast_date=current_date,
+                        start_time=s_time,
+                        end_time=e_time,
+                        program_name=actual_prog_name,
+                        description=f"Exibição real de {actual_prog_name} na rede {channel} ({market}).",
+                        market=market,
+                        is_live=False
+                    )
+                    records_to_add.append(grid_entry)
 
     if records_to_add:
         session.bulk_save_objects(records_to_add)
         session.commit()
-        print(f"Successfully seeded {len(records_to_add)} slots of real programming grid!")
+        print(f"Successfully seeded {len(records_to_add)} slots of real programming grid across NACIONAL, SP and RJ!")
     else:
         print("No records created.")
 
