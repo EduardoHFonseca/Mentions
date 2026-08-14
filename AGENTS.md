@@ -294,4 +294,5 @@ Use `here.now` to share static prototypes, files, or documentation instantly.
 
 ## Specific Directives
 - **Este projeto deve ser executado APENAS em webservice local.**
+- **DIRETIVA DE PORTAS E PUBLICAÇÃO:** Todo projeto que tenha camada de publicação será iniciado em uma porta diferente, utilizando a próxima porta disponível (ex: Streamlit 8501, Backend API 8000).
 - **DIRETIVA DE TENTATIVAS:** Se houver uma tentativa de corrigir um problema de desenvolvimento mais de 5 vezes na mesma sequência sem resultado, propor outras soluções em diferentes tecnologias.

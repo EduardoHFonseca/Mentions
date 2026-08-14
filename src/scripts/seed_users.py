@@ -14,8 +14,8 @@ def seed_specific_users():
     try:
         # Define users to create
         users_data = [
-            {"email": "admin@mentions.com", "full_name": "Admin", "role": "admin", "company_name": "Kantar"},
-            {"email": "operator@mentions.com", "full_name": "Operator", "role": "operator", "company_name": "Kantar"},
+            {"email": "admin@mentions.com", "full_name": "Admin", "role": "admin", "company_name": "Ibope"},
+            {"email": "operator@mentions.com", "full_name": "Operator", "role": "operator", "company_name": "Ibope"},
             {"email": "client@mentions.com", "full_name": "Client", "role": "client", "company_name": "Empresa Cliente"}
         ]
 

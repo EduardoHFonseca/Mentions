@@ -11,7 +11,8 @@ class ProgrammingGridBase(BaseModel):
     program_name: str
     description: Optional[str]
     market: Optional[str] = "NACIONAL"
-    is_live: bool
+    media_type: Optional[str] = "tv"
+    is_live: Optional[bool] = False
 
 class ProgrammingGridResponse(ProgrammingGridBase):
     id: UUID
@@ -32,6 +33,7 @@ class MonitoringRuleBase(BaseModel):
     days_of_week: List[int]
     grid_type: Optional[str] = "national"
     market: Optional[str] = "NACIONAL"
+    media_type: Optional[str] = "tv"
 
 class MonitoringRuleCreate(MonitoringRuleBase):
     pass
@@ -49,6 +51,10 @@ class MonitoringSetBase(BaseModel):
     search_terms: List[str]
     audience_data_enabled: Optional[bool] = False
     clip_context_seconds: Optional[int] = 15
+    execution_mode: Optional[str] = "continuous" # "continuous" or "retroactive"
+    media_type: Optional[str] = "tv" # "tv" or "radio"
+    retroactive_start_date: Optional[date] = None
+    retroactive_end_date: Optional[date] = None
 
 class MonitoringSetCreate(MonitoringSetBase):
     rules: List[MonitoringRuleCreate]
@@ -210,6 +216,8 @@ class MentionBase(BaseModel):
     transcription: str
     context: Optional[str] = None
     video_url: Optional[str] = None
+    audio_url: Optional[str] = None
+    media_type: Optional[str] = "tv"
     audience_share: Optional[int] = None
     audience_rating: Optional[int] = None
 
@@ -229,6 +237,24 @@ class TaskQueueResponse(BaseModel):
     scheduled_for: datetime
     status: str
     payload: Optional[dict] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class TaskQueueOperatorResponse(BaseModel):
+    id: UUID
+    monitoring_set_id: UUID
+    task_type: str
+    task_type_label: str
+    client_name: str
+    client_company: str
+    set_name: str
+    set_summary: str
+    execution_mode: str
+    scheduled_for: datetime
+    status: str
     created_at: datetime
     updated_at: datetime
 

@@ -15,9 +15,9 @@ def seed_grid():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    # Clear existing programming grid
-    print("Clearing existing programming grid...")
-    session.query(ProgrammingGrid).delete()
+    # Clear existing Brazilian programming grid (NACIONAL, SP, RJ)
+    print("Clearing existing Brazilian programming grid...")
+    session.query(ProgrammingGrid).filter(ProgrammingGrid.market.in_(["NACIONAL", "SP", "RJ"])).delete(synchronize_session=False)
     session.commit()
 
     # Date range: Monday June 22, 2026 to Sunday June 28, 2026

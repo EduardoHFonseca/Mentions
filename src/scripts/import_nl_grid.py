@@ -178,7 +178,7 @@ def fetch_and_import_nl_grid():
                     broadcast_date=target_date,
                     start_time=s_time,
                     end_time=e_time,
-                    program_name=title,
+                    program_name=title.upper(),
                     description=final_desc,
                     market="NL",
                     is_live=is_live

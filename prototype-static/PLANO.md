@@ -7,7 +7,7 @@
 **Data de Atualização:** 2026-04-10
 
 ### Resumo
-Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Utiliza as capacidades de **Program Grid** e **Transcription Façade** da Kantar para permitir que clientes monitorem termos específicos, marcas ou tópicos em grades de programação selecionadas, gerando relatórios detalhados e clips de vídeo.
+Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Utiliza as capacidades de **Program Grid** e **Transcription Façade** do Ibope para permitir que clientes monitorem termos específicos, marcas ou tópicos em grades de programação selecionadas, gerando relatórios detalhados e clips de vídeo.
 
 ### Diretrizes de UX/UI e Publicação
 - **Prioridade Desktop:** Operação otimizada para desktop. Layout responsivo para celular como secundário.
@@ -20,7 +20,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 - [x] Interface de consulta à grade de programação externa
 - [x] Gestão de Conjuntos de Monitoramento (MonitoringSets) e Regras (MonitoringRules)
 - [ ] Fluxo de aprovação comercial/crédito com justificativa de exceção
-- [ ] Processamento de vídeos via **Transcription Façade (Kantar)**
+- [ ] Processamento de vídeos via **Transcription Façade (Ibope)**
 - [x] Painel de ocorrências e geração de relatórios
 - [ ] Integração de **Dados de Audiência** (Opcional/Premium)
 - [ ] Geração de Clips de Vídeo com **Contexto** (Offset de segundos)
@@ -36,7 +36,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 ## Pendências Críticas
 1. **Tabela de Preços:** Estratégia baseada em Minutos, Termos, Região e Impostos.
 2. **Score de Crédito:** Definição da fonte/tabela de score para automação de aprovação.
-3. **API de Audiência:** Regras de integração com o serviço de Realtime da Kantar Ibope Media.
+3. **API de Audiência:** Regras de integração com o serviço de Realtime do IBOPE Media.
 
 ---
 
@@ -49,7 +49,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 | Frontend | `React/Next.js` | ⏳ |
 | Backend | `FastAPI (Python)` | ✅ |
 | Banco de Dados | `PostgreSQL` | ✅ |
-| Motor de Transcrição | `Transcription Façade (Kantar)` | ⏳ |
+| Motor de Transcrição | `Transcription Façade (Ibope)` | ⏳ |
 | Motor de Análise | `Content Analyzer (Mentions AI Engine)` | ⏳ |
 | Reconhecimento de Imagem | `YoLo (Fase Futura)` | ⏳ |
 | Infraestrutura | `Escalabilidade On-Demand (Cloud)` | ⏳ |
@@ -105,4 +105,4 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 
 ## Histórico de Implementação Recente
 1. **v1.2.1:** Implementação inicial do CRUD de Sets e Dashboard Streamlit.
-2. **v1.3.0:** Refinamento total baseado no Roadmap Kantar (PPT): Inclusão de Audiência, Contexto de Vídeo, ERP Dynamics AX e Auditoria de Operador.
+2. **v1.3.0:** Refinamento total baseado no Roadmap Ibope (PPT): Inclusão de Audiência, Contexto de Vídeo, ERP Dynamics AX e Auditoria de Operador.

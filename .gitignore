@@ -8,5 +8,7 @@ ENV/
 .env
 .vscode/
 .idea/
+uploads/clips/
+uploads/*.wav
 data/*.csv
 !data/agencias_marketing_ficticias.csv

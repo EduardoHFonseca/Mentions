@@ -2,18 +2,18 @@
 
 ## Visão Geral do Projeto
 
-**Nome:** Mentions On-Demand (Sistema de Busca em Vídeos de TV)
-**Versão:** 1.4.4
-**Data de Atualização:** 2026-07-22
+**Nome:** Mentions On-Demand (Sistema de Busca em Vídeos de TV e Áudios de Rádio)
+**Versão:** 1.5.1
+**Data de Atualização:** 2026-08-14
 
 ### Resumo
-Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Utiliza as capacidades de **Program Grid** e **Transcription Façade** da Kantar para permitir que clientes monitorem termos específicos, marcas ou tópicos em grades de programação selecionadas, gerando relatórios detalhados e clips de vídeo.
+Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Utiliza as capacidades de **Program Grid** e **Transcription Façade** do Ibope para permitir que clientes monitorem termos específicos, marcas ou tópicos em grades de programação selecionadas, gerando relatórios detalhados e clips de vídeo.
 
 ### Diretrizes de UX/UI e Publicação
 - **Prioridade Desktop:** Operação otimizada para desktop. Layout responsivo para celular como secundário.
 - **Multilíngue:** Suporte nativo a PT, EN e ES.
 - **Publicação:** NÃO publicar no here.now (somente webservice local).
-- **Identidade Visual:** Alinhada ao padrão **AdInsights** (Kantar IBOPE Media).
+- **Identidade Visual:** Alinhada ao padrão **AdInsights** (IBOPE Media).
 
 ### Escopo
 - [x] Autenticação de usuários (Cliente, Operador e Administrador)
@@ -21,7 +21,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 - [x] Interface de consulta à grade de programação externa
 - [x] Gestão de Conjuntos de Monitoramento (MonitoringSets) e Regras (MonitoringRules)
 - [x] Fluxo de aprovação comercial/crédito com justificativa de exceção
-- [x] Processamento assíncrono de vídeos via **Transcription Façade (Kantar)** (Fila FIFO da Madrugada)
+- [x] Processamento assíncrono de vídeos via **Transcription Façade (Ibope)** (Fila FIFO da Madrugada)
 - [x] Painel de ocorrências e geração de relatórios
 - [x] Integração de **Dados de Audiência** (Opcional/Premium)
 - [x] Geração e Recorte de Clips de Vídeo com **Contexto** (Offset de segundos) na fila de tarefas
@@ -31,7 +31,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 - [x] Dashboard de Saúde do Sistema (Monitoramento de Dispatcher/Engine)
 - [x] Gestão de Equipe Interna (Admin)
 - [x] Log de Auditoria do Operador (Read-only para Admin)
-- [ ] Gestão completa de documentos (versão, substituição, histórico)
+- [x] Gestão completa de documentos (versão, substituição, histórico)
 - [ ] Integração com ERP (**Microsoft Dynamics AX**)
 - [ ] [CRÍTICO - DEV ONLY] Remover redirecionamento de e-mail para `eduardo.fonseca@ibope.com` no `EmailService` ao finalizar o projeto.
 
@@ -41,7 +41,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 1. **[x] BUG - Upload de Documentos (RESOLVIDO):** O fluxo de submissão de múltiplos documentos (Silva MKT) foi completamente corrigido no frontend e backend com envios individuais e sequenciais resilientes em tela dedicada.
 2. **Tabela de Preços:** Estratégia baseada em Minutos, Termos, Região e Impostos.
 3. **Score de Crédito:** Definição da fonte/tabela de score para automação de aprovação.
-4. **API de Audiência:** Regras de integração com o serviço de Realtime da Kantar Ibope Media.
+4. **API de Audiência:** Regras de integração com o serviço de Realtime do IBOPE Media.
 
 ---
 
@@ -54,7 +54,7 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 | Frontend | `Streamlit (Protótipo) / React (Final)` | ✅/⏳ |
 | Backend | `FastAPI (Python)` | ✅ |
 | Banco de Dados | `PostgreSQL` | ✅ |
-| Motor de Transcrição | `Transcription Façade (Kantar)` | ⏳ |
+| Motor de Transcrição | `Transcription Façade (Ibope)` | ⏳ |
 | Motor de Análise | `Content Analyzer (Mentions AI Engine)` | ⏳ |
 | Reconhecimento de Imagem | `YoLo (Fase Futura)` | ⏳ |
 | Infraestrutura | `Escalabilidade On-Demand (Cloud)` | ⏳ |
@@ -67,8 +67,8 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 3. **v1.3.3:** Novo Onboarding Self-Service (Upload de documentos pelo cliente, status pending_approval inicial, bloqueio automático).
 4. **v1.3.4:** Auto-aprovação de MonitoringSets, melhorias no Operador e correções de segurança.
 5. **v1.3.5:** 
-    - **Identidade Visual:** Aplicado padrão AdInsights (Kantar Blue #0F21FD, tipografia Geist/Verdana).
-    - **Logotipo:** Restauração e centralização absoluta do logo oficial Kantar IBOPE Media.
+    - **Identidade Visual:** Aplicado padrão AdInsights (Ibope Blue #0F21FD, tipografia Geist/Verdana).
+    - **Logotipo:** Restauração e centralização absoluta do logo oficial IBOPE Media.
     - **Idiomas:** Seletor híbrido estável com bandeiras circulares (HTML/SVG) e troca via URL.
     - **UX/UI:** Botões cinza corporativo, fontes maiores no sidebar e novo card de perfil de usuário.
     - **Fix:** Correção de KeyErrors no dicionário de tradução e centralização de textos no login.
@@ -86,10 +86,10 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
     - **Reestruturação Completa da Tela de Relatórios:**
         - **Painel de Atividade (KPIs):** Adicionados indicadores rápidos e analíticos mostrando as ocorrências totais, emissora líder e programa líder para o conjunto selecionado.
         - **Filtro de Data para Geração On-Demand:** Modificados o frontend e backend para suportar a seleção de um período customizado (Data de Início e Data de Fim) para gerar o relatório consolidado exato do intervalo desejado.
-        - **Cards de Histórico Premium:** Tabela antiga em pandas cru foi substituída por um feed de cards modernos contendo o nome limpo do arquivo, datas formatadas de geração, período de cobertura amigável, indicador do output real de valor (quantidade de menções capturadas no período) e um botão de download estilizado no azul Kantar.
+        - **Cards de Histórico Premium:** Tabela antiga em pandas cru foi substituída por um feed de cards modernos contendo o nome limpo do arquivo, datas formatadas de geração, período de cobertura amigável, indicador do output real de valor (quantidade de menções capturadas no período) e um botão de download estilizado no azul Ibope.
 8. **v1.3.8:**
     - **Fila de Tarefas Assíncronas (TaskQueue):** Implementação de fila FIFO persistente no PostgreSQL para gerenciar tarefas de transcrição e clipping em lote durante a madrugada.
-    - **Transcription Façade & Video Clipping:** Processamento asíncrono que consome arquivos do repositório de vídeo, executa busca no Transcription Façade da Kantar e gera recortes de vídeo físicos (`clip_[id].mp4`) com margens de contexto configuráveis (offset).
+    - **Transcription Façade & Video Clipping:** Processamento asíncrono que consome arquivos do repositório de vídeo, executa busca no Transcription Façade do Ibope e gera recortes de vídeo físicos (`clip_[id].mp4`) com margens de contexto configuráveis (offset).
     - **Relatório Automatizado D+1 por E-mail:** Geração automática e envio diário às 06h via e-mail HTML rico de todas as ocorrências mapeadas de D-1, detalhando ocorrências, time-stamps, dados de audiência premium e links seguros para reprodução instantânea no player do sistema.
     - **Scheduler Control (Operador):** Painel interativo de gerenciamento de tarefas no módulo do operador, permitindo visualizar a fila de processamento e executar manualmente (simulação da madrugada) a fila de forma assíncrona.
 9. **v1.3.9:**
@@ -112,9 +112,38 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
     - **Módulo Administrador & Log de Auditoria:** Implementação das 3 abas no perfil Admin: (1) Feed de Auditoria dos Operadores (`GET /api/admin/logs`) com filtros por ação e justificativas, (2) Gestão de Equipe Interna com criação de novos usuários (`POST /api/admin/user`), (3) Parâmetros Globais do Sistema.
     - **Visualização de Documentos pelo Operador:** Adicionado link/botão para download e visualização direta dos arquivos anexos (`GET /api/user/document/{user_id}/{filename}`) na tela de gestão de clientes do Operador.
     - **Registro de Log Automático:** Registro transparente na tabela `operator_logs` para aprovações, ajustes de crédito e bloqueios/desbloqueios.
-14. **v1.4.4 (Atual):**
+14. **v1.4.4:**
     - **Persistência das Configurações Globais:** Implementação das rotas `GET /api/admin/config` e `POST /api/admin/config` no backend com persistência na tabela `system_configs` do PostgreSQL.
     - **Leitura & Gravação Dinâmica (Admin):** Conectado o formulário da aba "Configurações Globais" para ler os parâmetros salvos no banco de dados e aplicar atualizações em tempo real com feedback via Toast e reload automático da interface.
+15. **v1.4.5:**
+    - **Execução Retroativa com Acervo de 1 Ano:** Implementação da funcionalidade de monitoramento histórico retroativo com janela de até 90 dias (3 meses) sobre o acervo retido de 1 ano.
+    - **Controle de Fila & Prevenção de Sobrecarga:** Enfileiramento em lote (`TaskQueue`) e fatiamento assíncrono para processamento controlado.
+    - **Fluxo de Aprovação Operacional:** Todo pedido retroativo inicia obrigatoriamente como `awaiting_approval`, transitando para `in_preparation` / `processing` após aprovação do Operador e finalizando como `active` com menções liberadas.
+    - **UI & Internacionalização:** Inclusão de seletores de datas com máscaras estritas, avisos de progresso e badges temáticos em PT, EN e ES.
+    - **Validação de Segurança:** Auditoria de segurança referente à exposição de API Keys e credenciais registrada no backlog.
+16. **v1.4.6:**
+    - **Grade FIFO Executiva (Saúde do Sistema):** Reformulação da apresentação da fila de tarefas com agregação executiva: Dono/Cliente, Item/Conjunto com resumo de canais/programas, Tipo de Tarefa e Agendamento.
+    - **Métricas & Filtros Avançados:** Adicionados KPIs de capacidade (Total na Fila, Pendentes para a Madrugada, Processadas, Falhas) e filtros por Status e Empresa.
+17. **v1.5.0:**
+    - **Monitoramento de Rádio (AM/FM/Web Rádio):** Suporte multimídia completo permitindo monitorar emissoras de rádio nas 5 praças estratégicas (São Paulo [SP], Rio de Janeiro [RJ], Porto Alegre [POA], Belo Horizonte [BH], Brasília [BSB]).
+    - **Catálogo de Emissoras de Rádio:** Integração das principais emissoras de notícias/talk e entretenimento (BandNews FM, CBN, Jovem Pan, Rádio Eldorado, Alpha FM, Transamérica).
+    - **Configuração Exclusiva por Faixa de Horário:** Interface simplificada e eficiente orientada a blocos horários (Prime Time Matutino, Almoço, Vespertina, Volta para Casa, 24h ou Customizada) com controle de dias da semana.
+    - **Recorte de Áudio & Player Nativo (`st.audio`):** Ocorrências de rádio geram e reproduzem arquivos de áudio dedicados (`.mp3`), com economia de armazenamento e banda.
+    - **Validação de Segurança:** Auditoria de segurança referente à exposição de API Keys e credenciais preservada no backlog.
+18. **v1.5.1 (Atual):**
+    - **Layout Split Master-Detail (Desacoplamento Visual):** Reformulação da tela principal do cliente com separação lateral em 2 colunas: Coluna Esquerda (~35%) com a lista de conjuntos, status e gestão rápida; Coluna Direita (~65%) com o feed contínuo de ocorrências, player e filtros.
+    - **Modal / Container de Criação Isolado:** Formulário de criação/edição de conjuntos isolado em container dedicado com botão de fechar, eliminando poluição visual sobre o feed de mídia.
+    - **Foco Interativo:** Destaque visual corporativo no card do conjunto ativo (`👉 Em Foco`) com carregamento instantâneo do feed correspondente.
+
+---
+
+## Pendências & Backlog
+1. **[OBRIGATÓRIO - SEGURANÇA]** Validação de segurança referente à exposição de API Keys e credenciais nos ambientes de execução.
+2. **Tabela de Preços:** Estratégia baseada em Minutos, Termos, Região e Impostos.
+3. **Score de Crédito:** Definição da fonte/tabela de score para automação de aprovação.
+4. **API de Audiência:** Regras de integração com o serviço de Realtime do IBOPE Media.
+5. **Gestão completa de documentos:** Versão, substituição e histórico.
+6. **Integração com ERP:** Microsoft Dynamics AX.
 
 ---
 
@@ -122,6 +151,6 @@ Sistema IA-powered para monitoramento personalizado de conteúdo televisivo. Uti
 ```env
 AGENTMAIL_API_KEY=am_us_...
 DATABASE_URL=postgresql://mentions_app:app_secure_pass@localhost:5432/mentions_db
-KANTAR_FACADE_API_KEY=...
+IBOPE_FACADE_API_KEY=...
 ERP_AX_ENDPOINT=...
 ```

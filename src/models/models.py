@@ -37,7 +37,11 @@ class MonitoringSet(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     name = Column(String, nullable=False)
     search_terms = Column(ARRAY(String), nullable=False)
-    status = Column(String, default="stand_by")  # stand_by, awaiting_approval, approved, active, cancelled
+    status = Column(String, default="stand_by")  # stand_by, awaiting_approval, approved, in_preparation, processing, active, cancelled
+    execution_mode = Column(String, default="continuous") # continuous, retroactive
+    media_type = Column(String, default="tv") # "tv", "radio"
+    retroactive_start_date = Column(Date, nullable=True)
+    retroactive_end_date = Column(Date, nullable=True)
     total_minutes_estimate = Column(Integer, default=0)
     audience_data_enabled = Column(Boolean, default=False)
     clip_context_seconds = Column(Integer, default=15) # Context offset
@@ -62,7 +66,8 @@ class MonitoringRule(Base):
     end_time = Column(Time, nullable=False)
     days_of_week = Column(ARRAY(Integer), nullable=False)  # [1, 2, 3, 4, 5]
     grid_type = Column(String, default="national") # "national", "regional"
-    market = Column(String, default="NACIONAL") # "NACIONAL", "SP", "RJ"
+    market = Column(String, default="NACIONAL") # "NACIONAL", "SP", "RJ", "POA", "BH", "BSB"
+    media_type = Column(String, default="tv") # "tv", "radio"
     created_at = Column(DateTime, default=datetime.utcnow)
 
     monitoring_set = relationship("MonitoringSet", back_populates="rules")
@@ -119,6 +124,8 @@ class Mention(Base):
     transcription = Column(String, nullable=False)
     context = Column(String, nullable=True)
     video_url = Column(String, nullable=True)
+    audio_url = Column(String, nullable=True)
+    media_type = Column(String, default="tv") # "tv", "radio"
     
     # Audience Data (Premium)
     audience_share = Column(Integer, nullable=True) # % * 100 (e.g. 15.5% = 1550)
@@ -138,7 +145,8 @@ class ProgrammingGrid(Base):
     end_time = Column(Time, nullable=True)
     program_name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    market = Column(String, default="NACIONAL", index=True) # "NACIONAL", "SP", "RJ"
+    market = Column(String, default="NACIONAL", index=True) # "NACIONAL", "SP", "RJ", "POA", "BH", "BSB"
+    media_type = Column(String, default="tv", index=True) # "tv", "radio"
     is_live = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 

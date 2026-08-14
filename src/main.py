@@ -87,12 +87,12 @@ def register_public(user_data: schemas.UserCreateByOperator, db: Session = Depen
     db_user = models.User(
         email=email_lower,
         password_hash=user_data.password,
-        full_name=user_data.full_name,
-        company_name=user_data.company_name,
+        full_name=user_data.full_name or "Contato Principal",
+        company_name=user_data.company_name or "Empresa Cliente",
         role="client",
-        status="pending_approval", # Force pending approval for public registration
-        credit_limit=0, # Initial credit 0
-        is_blocked_access=True, # Initially blocked
+        status="approved", # Active for instant demonstration
+        credit_limit=500000, # R$ 5.000,00 initial credit limit
+        is_blocked_access=False, # Unblocked
         document_status="missing",
         billing_info=user_data.billing_info
     )
@@ -102,9 +102,14 @@ def register_public(user_data: schemas.UserCreateByOperator, db: Session = Depen
     return db_user
 
 @app.get("/api/grid/channels", response_model=List[str])
-def get_channels(market: Optional[str] = Query(None, description="Filter by market (NACIONAL, SP, RJ, NL)"), db: Session = Depends(get_db)):
-    # Fetch all channels, trim them and get unique ones in uppercase
+def get_channels(
+    market: Optional[str] = Query(None, description="Filter by market (NACIONAL, SP, RJ, POA, BH, BSB, NL)"), 
+    media_type: Optional[str] = Query("tv", description="Filter by media type (tv, radio)"),
+    db: Session = Depends(get_db)
+):
     query = db.query(models.ProgrammingGrid.channel)
+    if media_type:
+        query = query.filter(models.ProgrammingGrid.media_type == media_type)
     if market:
         query = query.filter(models.ProgrammingGrid.market.ilike(f"%{market}%"))
     channels = query.distinct().all()
@@ -115,13 +120,17 @@ def get_channels(market: Optional[str] = Query(None, description="Filter by mark
 def lookup_grid(
     q: Optional[str] = Query(None, description="Search by program name or description"),
     channel: Optional[str] = Query(None, description="Filter by channel"),
-    market: Optional[str] = Query("NACIONAL", description="Filter by market (NACIONAL, SP, RJ)"),
+    market: Optional[str] = Query("NACIONAL", description="Filter by market (NACIONAL, SP, RJ, POA, BH, BSB)"),
+    media_type: Optional[str] = Query("tv", description="Filter by media type (tv, radio)"),
     limit: int = Query(20, le=100),
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
     query = db.query(models.ProgrammingGrid)
     
+    if media_type:
+        query = query.filter(models.ProgrammingGrid.media_type == media_type)
+        
     market_val = market or "NACIONAL"
     query = query.filter(models.ProgrammingGrid.market.ilike(f"%{market_val}%"))
     
@@ -152,40 +161,67 @@ def create_monitoring_set(set_data: schemas.MonitoringSetCreate, user_id: Option
     else:
         effective_user_id = user_id
     
+    # Validation for Retroactive Monitoring
+    is_retroactive = (set_data.execution_mode == "retroactive")
+    if is_retroactive:
+        if not set_data.retroactive_start_date or not set_data.retroactive_end_date:
+            raise HTTPException(status_code=400, detail="Data de início e término são obrigatórias para monitoramento retroativo.")
+        
+        if set_data.retroactive_end_date < set_data.retroactive_start_date:
+            raise HTTPException(status_code=400, detail="A data de término deve ser posterior ou igual à data de início.")
+            
+        days_span = (set_data.retroactive_end_date - set_data.retroactive_start_date).days + 1
+        if days_span > 93:
+            raise HTTPException(status_code=400, detail="O período máximo permitido para execução retroativa é de 90 dias (3 meses).")
+            
+        today_val = date.today()
+        if (today_val - set_data.retroactive_start_date).days > 366:
+            raise HTTPException(status_code=400, detail="A data inicial excede o acervo histórico retido de 1 ano (365 dias).")
+
     # Calculate estimated minutes
-    total_min = 0
+    weekly_min = 0
     for r in set_data.rules:
         h1, m1 = r.start_time.hour, r.start_time.minute
         h2, m2 = r.end_time.hour, r.end_time.minute
         duration = (h2*60 + m2) - (h1*60 + m1)
         if duration < 0: duration += 24*60 # Cross midnight
-        total_min += duration * len(r.days_of_week)
+        weekly_min += duration * len(r.days_of_week)
 
-    # AUTO-APPROVAL LOGIC
-    # 1. Get user credit and existing active sets cost
+    if is_retroactive:
+        weeks = max(1, days_span / 7)
+        total_min = int(weekly_min * weeks)
+    else:
+        total_min = weekly_min
+
+    # APPROVAL LOGIC
+    # Retroactive execution ALWAYS goes to operator approval first to manage queue load
     user_obj = db.query(models.User).filter(models.User.id == effective_user_id).first()
     
-    # Simple price logic: 10 cents per minute
-    new_set_cost = total_min * 10
-    
-    # Calculate current usage
-    existing_sets = db.query(models.MonitoringSet).filter(
-        models.MonitoringSet.user_id == effective_user_id,
-        models.MonitoringSet.status == "active"
-    ).all()
-    current_weekly_cost = sum(s.total_minutes_estimate * 10 for s in existing_sets)
-    
-    # Decide status
-    if (current_weekly_cost + new_set_cost) <= user_obj.credit_limit:
-        initial_status = "active"
-    else:
+    if is_retroactive:
         initial_status = "awaiting_approval"
+    else:
+        # Simple price logic: 10 cents per minute
+        new_set_cost = total_min * 10
+        existing_sets = db.query(models.MonitoringSet).filter(
+            models.MonitoringSet.user_id == effective_user_id,
+            models.MonitoringSet.status == "active"
+        ).all()
+        current_weekly_cost = sum(s.total_minutes_estimate * 10 for s in existing_sets)
+        
+        if (current_weekly_cost + new_set_cost) <= (user_obj.credit_limit or 0):
+            initial_status = "active"
+        else:
+            initial_status = "awaiting_approval"
 
     db_set = models.MonitoringSet(
         user_id=effective_user_id,
         name=set_data.name,
         search_terms=set_data.search_terms,
         status=initial_status,
+        execution_mode=set_data.execution_mode or "continuous",
+        media_type=set_data.media_type or "tv",
+        retroactive_start_date=set_data.retroactive_start_date if is_retroactive else None,
+        retroactive_end_date=set_data.retroactive_end_date if is_retroactive else None,
         total_minutes_estimate=total_min,
         audience_data_enabled=set_data.audience_data_enabled,
         clip_context_seconds=set_data.clip_context_seconds
@@ -204,9 +240,44 @@ def create_monitoring_set(set_data: schemas.MonitoringSetCreate, user_id: Option
     
     db.commit()
     db.refresh(db_set)
+    
+    # If immediately active, create initial tasks
+    if initial_status == "active":
+        create_tasks_for_approved_set(db, db_set)
+        
     return db_set
 
 # Report Config & History Endpoints
+@app.post("/api/reports/test-email")
+def send_test_email(to_email: str = Query(...), client_name: Optional[str] = Query(None)):
+    from src.services.email_service import email_service
+    
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #0F21FD; margin-top: 0;">🧪 Teste de Envio - Mentions On-Demand</h2>
+        <p>Olá <b>{client_name or 'Cliente'}</b>,</p>
+        <p>Este é um disparo de validação do serviço de notificações e relatórios automatizados via <b>AgentMail</b>.</p>
+        <div style="background-color: #f8fafc; border-left: 4px solid #0F21FD; padding: 12px; margin: 15px 0;">
+            <p style="margin: 0; font-size: 0.9rem; color: #334155;"><b>Status da Integração:</b> Conectado e Operacional 🟢</p>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Ambiente de Execução: Webservice Local</p>
+        </div>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            Mentions On-Demand • IBOPE Media
+        </p>
+    </div>
+    """
+    
+    try:
+        res = email_service.send_notification(
+            to=to_email,
+            subject="[TESTE] Validação de Envio de E-mail - Mentions On-Demand",
+            text=f"Olá {client_name or 'Cliente'}, este é um teste de envio do sistema Mentions On-Demand via AgentMail.",
+            html=html_content
+        )
+        return {"status": "success", "message": f"E-mail de teste enviado com sucesso para {to_email}", "agentmail_response": res}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao disparar e-mail via AgentMail: {str(e)}")
+
 @app.post("/api/reports/config", response_model=schemas.ReportConfigResponse)
 def create_report_config(config: schemas.ReportConfigCreate, user_id: Optional[UUID] = Query(None), db: Session = Depends(get_db)):
     if not user_id:
@@ -303,6 +374,14 @@ def update_monitoring_set(set_id: UUID, set_data: schemas.MonitoringSetUpdate, d
     db_set.search_terms = set_data.search_terms
     db_set.audience_data_enabled = set_data.audience_data_enabled
     db_set.clip_context_seconds = set_data.clip_context_seconds
+    if set_data.execution_mode:
+        db_set.execution_mode = set_data.execution_mode
+    if set_data.media_type:
+        db_set.media_type = set_data.media_type
+    if set_data.retroactive_start_date:
+        db_set.retroactive_start_date = set_data.retroactive_start_date
+    if set_data.retroactive_end_date:
+        db_set.retroactive_end_date = set_data.retroactive_end_date
     if set_data.status:
         db_set.status = set_data.status
 
@@ -409,6 +488,10 @@ def list_pending_sets(db: Session = Depends(get_db)):
             if r.days_of_week:
                 all_days.update(r.days_of_week)
                 
+        retro_days = 0
+        if s.execution_mode == "retroactive" and s.retroactive_start_date and s.retroactive_end_date:
+            retro_days = (s.retroactive_end_date - s.retroactive_start_date).days + 1
+
         results.append({
             "id": s.id,
             "name": s.name,
@@ -420,7 +503,11 @@ def list_pending_sets(db: Session = Depends(get_db)):
             "client_document_status": s.owner.document_status if s.owner else "missing",
             "channels_count": len(unique_channels),
             "programs_count": len(unique_programs),
-            "frequency_weekly_count": len(all_days)
+            "frequency_weekly_count": len(all_days),
+            "execution_mode": s.execution_mode or "continuous",
+            "retroactive_start_date": str(s.retroactive_start_date) if s.retroactive_start_date else None,
+            "retroactive_end_date": str(s.retroactive_end_date) if s.retroactive_end_date else None,
+            "retroactive_days": retro_days
         })
     return results
 
@@ -441,7 +528,9 @@ def list_clients_for_operator(db: Session = Depends(get_db)):
             "status": c.status,
             "active_sets_count": len(active_sets),
             "total_minutes_estimate": total_min,
-            "billing_info": c.billing_info
+            "billing_info": c.billing_info,
+            "document_status": c.document_status or "missing",
+            "documents": c.documents or {}
         })
     return results
 
@@ -572,8 +661,18 @@ def create_tasks_for_approved_set(db: Session, db_set: models.MonitoringSet):
     from datetime import date, timedelta, time, datetime
     import json
     
-    current_date = date(2026, 6, 30) # Anchor to our environment's current date
-    dates_to_process = [current_date - timedelta(days=i) for i in range(3, -1, -1)]
+    if db_set.execution_mode == "retroactive" and db_set.retroactive_start_date and db_set.retroactive_end_date:
+        start_d = db_set.retroactive_start_date
+        end_d = db_set.retroactive_end_date
+        days_span = (end_d - start_d).days + 1
+        dates_to_process = [start_d + timedelta(days=i) for i in range(days_span)]
+        db_set.status = "in_preparation"
+        db.commit()
+    else:
+        current_date = date(2026, 6, 30) # Anchor to our environment's current date
+        dates_to_process = [current_date - timedelta(days=i) for i in range(3, -1, -1)]
+        db_set.status = "active"
+        db.commit()
     
     # Get all existing tasks for this set to avoid duplicate creations
     existing_tasks = db.query(models.TaskQueue).filter(models.TaskQueue.monitoring_set_id == db_set.id).all()
@@ -590,48 +689,69 @@ def create_tasks_for_approved_set(db: Session, db_set: models.MonitoringSet):
                     models.ProgrammingGrid.market == (rule.market or "NACIONAL")
                 ).all()
                 
-                for prog in grid_items:
-                    # Match by name or time overlap
-                    name_match = False
-                    if rule.program_name and prog.program_name:
-                        if rule.program_name.lower() in prog.program_name.lower() or prog.program_name.lower() in rule.program_name.lower():
-                            name_match = True
-                    
-                    time_overlap = False
-                    if rule.start_time and rule.end_time and prog.start_time:
-                        if rule.start_time <= prog.start_time <= rule.end_time:
-                            time_overlap = True
-                            
-                    if name_match or time_overlap:
-                        # Check duplicate in Python
-                        is_duplicate = False
-                        for et in existing_tasks:
-                            if et.task_type == "transcribe_and_clip" and et.payload:
-                                if et.payload.get("broadcast_date") == str(d) and et.payload.get("program_name") == prog.program_name and et.payload.get("market") == prog.market:
-                                    is_duplicate = True
-                                    break
-                                    
-                        if not is_duplicate:
-                            prog_end_time = prog.end_time if prog.end_time else rule.end_time
-                            scheduled_time = datetime.combine(d, prog_end_time) + timedelta(hours=1)
-                            
-                            payload_data = {
-                                "channel": prog.channel,
-                                "program_name": prog.program_name,
-                                "broadcast_date": str(d),
-                                "start_time": str(prog.start_time),
-                                "end_time": str(prog.end_time) if prog.end_time else None,
-                                "market": prog.market
-                            }
-                            
-                            task = models.TaskQueue(
-                                monitoring_set_id=db_set.id,
-                                task_type="transcribe_and_clip",
-                                scheduled_for=scheduled_time,
-                                status="pending",
-                                payload=payload_data
-                            )
-                            db.add(task)
+                # If no specific grid items for this past date, create virtual grid entry based on rule
+                if not grid_items:
+                    prog_end_time = rule.end_time
+                    scheduled_time = datetime.combine(d, prog_end_time) + timedelta(hours=1)
+                    payload_data = {
+                        "channel": rule.channel,
+                        "program_name": rule.program_name or f"Grade {rule.channel}",
+                        "broadcast_date": str(d),
+                        "start_time": str(rule.start_time),
+                        "end_time": str(rule.end_time) if rule.end_time else None,
+                        "market": rule.market or "NACIONAL"
+                    }
+                    task = models.TaskQueue(
+                        monitoring_set_id=db_set.id,
+                        task_type="transcribe_and_clip",
+                        scheduled_for=scheduled_time,
+                        status="pending",
+                        payload=payload_data
+                    )
+                    db.add(task)
+                else:
+                    for prog in grid_items:
+                        # Match by name or time overlap
+                        name_match = False
+                        if rule.program_name and prog.program_name:
+                            if rule.program_name.lower() in prog.program_name.lower() or prog.program_name.lower() in rule.program_name.lower():
+                                name_match = True
+                        
+                        time_overlap = False
+                        if rule.start_time and rule.end_time and prog.start_time:
+                            if rule.start_time <= prog.start_time <= rule.end_time:
+                                time_overlap = True
+                                
+                        if name_match or time_overlap:
+                            # Check duplicate in Python
+                            is_duplicate = False
+                            for et in existing_tasks:
+                                if et.task_type == "transcribe_and_clip" and et.payload:
+                                    if et.payload.get("broadcast_date") == str(d) and et.payload.get("program_name") == prog.program_name and et.payload.get("market") == prog.market:
+                                        is_duplicate = True
+                                        break
+                                        
+                            if not is_duplicate:
+                                prog_end_time = prog.end_time if prog.end_time else rule.end_time
+                                scheduled_time = datetime.combine(d, prog_end_time) + timedelta(hours=1)
+                                
+                                payload_data = {
+                                    "channel": prog.channel,
+                                    "program_name": prog.program_name,
+                                    "broadcast_date": str(d),
+                                    "start_time": str(prog.start_time),
+                                    "end_time": str(prog.end_time) if prog.end_time else None,
+                                    "market": prog.market
+                                }
+                                
+                                task = models.TaskQueue(
+                                    monitoring_set_id=db_set.id,
+                                    task_type="transcribe_and_clip",
+                                    scheduled_for=scheduled_time,
+                                    status="pending",
+                                    payload=payload_data
+                                )
+                                db.add(task)
                             
         # Create daily report task for D+1 at 06:00
         report_scheduled = datetime.combine(d + timedelta(days=1), time(6, 0, 0))
@@ -664,10 +784,7 @@ def approve_set(action: schemas.OperatorAction, db: Session = Depends(get_db)):
     db_set = db.query(models.MonitoringSet).filter(models.MonitoringSet.id == action.target_id).first()
     if not db_set: raise HTTPException(status_code=404)
 
-    db_set.status = "approved"
-    db.commit() # commit status first
-    
-    # Generate background tasks for the newly approved set
+    # Generate background tasks for the newly approved set (this updates status to in_preparation or active)
     create_tasks_for_approved_set(db, db_set)
     
     log = models.OperatorLog(
@@ -675,11 +792,11 @@ def approve_set(action: schemas.OperatorAction, db: Session = Depends(get_db)):
         action="approve_set",
         target_id=db_set.id,
         target_type="set",
-        justification=action.justification
+        justification=action.justification or ("Aprovação de Monitoramento Retroativo" if db_set.execution_mode == "retroactive" else "Aprovação de Conjunto")
     )
     db.add(log)
     db.commit()
-    return {"status": "approved"}
+    return {"status": "approved", "set_status": db_set.status}
 
 @app.patch("/api/operator/user/{user_id}/block")
 def block_user_access(user_id: UUID, block: bool, db: Session = Depends(get_db)):
@@ -869,9 +986,64 @@ def get_user_document(user_id: UUID, filename: str):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
     return FileResponse(file_path)
 
-@app.get("/api/operator/tasks", response_model=List[schemas.TaskQueueResponse])
+@app.get("/api/operator/tasks", response_model=List[schemas.TaskQueueOperatorResponse])
 def get_task_queue(db: Session = Depends(get_db)):
-    return db.query(models.TaskQueue).order_by(models.TaskQueue.scheduled_for.asc()).all()
+    tasks = db.query(models.TaskQueue).order_by(models.TaskQueue.scheduled_for.asc()).all()
+    results = []
+    
+    for t in tasks:
+        db_set = db.query(models.MonitoringSet).filter(models.MonitoringSet.id == t.monitoring_set_id).first()
+        owner = db_set.owner if db_set else None
+        
+        client_name = owner.full_name if owner and owner.full_name else "N/A"
+        client_company = owner.company_name if owner and owner.company_name else "N/A"
+        set_name = db_set.name if db_set else "N/A"
+        execution_mode = db_set.execution_mode if db_set and db_set.execution_mode else "continuous"
+        
+        # Build set summary (ex: "Nacional • 2 canais, 3 programas" or "Regional (SP) • 1 canal, 1 programa")
+        if db_set and db_set.rules:
+            channels_set = set(r.channel for r in db_set.rules if r.channel)
+            programs_set = set(r.program_name for r in db_set.rules if r.program_name)
+            markets_set = set(r.market for r in db_set.rules if r.market and r.market != "NACIONAL")
+            
+            geo_str = f"Regional ({', '.join(markets_set)})" if markets_set else "Nacional"
+            ch_count = len(channels_set)
+            pr_count = len(programs_set)
+            
+            ch_str = f"{ch_count} {'canal' if ch_count == 1 else 'canais'}"
+            pr_str = f"{pr_count} {'programa' if pr_count == 1 else 'programas'}"
+            set_summary = f"{geo_str} • {ch_str}, {pr_str}"
+        else:
+            set_summary = "Grade Padrão"
+            
+        # Friendly label for task_type
+        if t.task_type == "transcribe_and_clip":
+            if execution_mode == "retroactive":
+                task_type_label = "🗓️ Lote Retroativo"
+            else:
+                task_type_label = "🔍 Busca & Transcrição"
+        elif t.task_type == "send_daily_report":
+            task_type_label = "📧 Relatório D+1"
+        else:
+            task_type_label = t.task_type
+            
+        results.append(schemas.TaskQueueOperatorResponse(
+            id=t.id,
+            monitoring_set_id=t.monitoring_set_id,
+            task_type=t.task_type,
+            task_type_label=task_type_label,
+            client_name=client_name,
+            client_company=client_company,
+            set_name=set_name,
+            set_summary=set_summary,
+            execution_mode=execution_mode,
+            scheduled_for=t.scheduled_for,
+            status=t.status,
+            created_at=t.created_at,
+            updated_at=t.updated_at
+        ))
+        
+    return results
 
 @app.post("/api/operator/tasks/run")
 def run_pending_tasks(db: Session = Depends(get_db)):
@@ -912,38 +1084,56 @@ def run_pending_tasks(db: Session = Depends(get_db)):
                     if random.random() < 0.75:
                         mention_id = uuid.uuid4()
                         
-                        # Copy samplevideo.mp4 to unique clip
                         clips_dir = os.path.join("uploads", "clips")
                         os.makedirs(clips_dir, exist_ok=True)
-                        source_video = os.path.join("uploads", "samplevideo.mp4")
-                        target_video = os.path.join(clips_dir, f"clip_{mention_id}.mp4")
                         
-                        if os.path.exists(source_video):
-                            shutil.copy(source_video, target_video)
+                        is_radio = (db_set.media_type == "radio")
                         
-                        phrases = [
-                            f"E no bloco comercial, a {term} consolidou sua liderança de recall na praça de São Paulo com grande repercussão.",
-                            f"Os números oficiais da Kantar mostram que a nova ativação da marca {term} no reality bateu recordes de engajamento diário.",
-                            f"Entrevistados comentaram a importância do patrocínio esportivo da {term} na consolidação da marca em rede nacional.",
-                            f"Na coletiva de imprensa, o porta-voz explicou como a {term} planeja expandir as operações neste segundo semestre."
-                        ]
+                        if is_radio:
+                            source_audio = os.path.join("uploads", "sampleaudio.mp3")
+                            target_audio = os.path.join(clips_dir, f"clip_{mention_id}.mp3")
+                            if os.path.exists(source_audio):
+                                shutil.copy(source_audio, target_audio)
+                            
+                            phrases = [
+                                f"No boletim de notícias e serviços, a {term} foi destacada pela inovação no mercado regional.",
+                                f"Durante a transmissão ao vivo na {channel}, comentaristas ressaltaram a liderança da marca {term}.",
+                                f"A emissora registrou grande interação de ouvintes sobre a nova campanha da {term} no horário de pico.",
+                                f"O âncora do programa comentou a expansão dos negócios da {term} na praça local neste trimestre."
+                            ]
+                            context_desc = f"Trecho de áudio capturado e transcrito via Ibope Transcription Façade na rádio {channel}. Margem de {db_set.clip_context_seconds}s."
+                            audio_url_val = f"uploads/clips/clip_{mention_id}.mp3"
+                            video_url_val = None
+                        else:
+                            source_video = os.path.join("uploads", "samplevideo.mp4")
+                            target_video = os.path.join(clips_dir, f"clip_{mention_id}.mp4")
+                            if os.path.exists(source_video):
+                                shutil.copy(source_video, target_video)
+                            
+                            phrases = [
+                                f"E no bloco comercial, a {term} consolidou sua liderança de recall na praça com grande repercussão.",
+                                f"Os números oficiais do Ibope mostram que a nova ativação da marca {term} no reality bateu recordes de engajamento diário.",
+                                f"Entrevistados comentaram a importância do patrocínio esportivo da {term} na consolidação da marca em rede nacional.",
+                                f"Na coletiva de imprensa, o porta-voz explicou como a {term} planeja expandir as operações neste segundo semestre."
+                            ]
+                            context_desc = f"Transcrição automatizada via Ibope Transcription Façade. Clipe gerado com offset de {db_set.clip_context_seconds}s."
+                            audio_url_val = None
+                            video_url_val = f"uploads/clips/clip_{mention_id}.mp4"
+
                         transcription = random.choice(phrases)
                         
                         # Determine realistic audience
                         aud_rating = 1500
                         aud_share = 2800
-                        if channel == "GLOBO":
+                        if channel in ["GLOBO", "BANDNEWS FM", "CBN"]:
                             aud_rating = random.randint(1800, 2400)
                             aud_share = random.randint(3500, 4500)
-                        elif channel == "SBT":
-                            aud_rating = random.randint(400, 600)
-                            aud_share = random.randint(1000, 1500)
-                        elif channel == "RECORD":
-                            aud_rating = random.randint(500, 800)
-                            aud_share = random.randint(1200, 1800)
-                        elif channel == "BANDEIRANTES":
-                            aud_rating = random.randint(150, 300)
-                            aud_share = random.randint(300, 600)
+                        elif channel in ["SBT", "JOVEM PAN", "ALPHA FM"]:
+                            aud_rating = random.randint(400, 800)
+                            aud_share = random.randint(1000, 1800)
+                        else:
+                            aud_rating = random.randint(200, 500)
+                            aud_share = random.randint(500, 1000)
                             
                         db_mention = models.Mention(
                             id=mention_id,
@@ -952,8 +1142,10 @@ def run_pending_tasks(db: Session = Depends(get_db)):
                             program_name=program_name,
                             occurrence_time=base_time,
                             transcription=transcription,
-                            context=f"Transcrição automatizada via Kantar Transcription Façade. Clipe gerado com offset de {db_set.clip_context_seconds}s.",
-                            video_url=f"uploads/clips/clip_{mention_id}.mp4",
+                            context=context_desc,
+                            video_url=video_url_val,
+                            audio_url=audio_url_val,
+                            media_type="radio" if is_radio else "tv",
                             audience_rating=aud_rating,
                             audience_share=aud_share
                         )
@@ -1052,8 +1244,8 @@ def run_pending_tasks(db: Session = Depends(get_db)):
                     
                 html_body += f"""
                         <p style="font-size: 0.8rem; color: #64748B; margin-top: 30px; text-align: center; border-top: 1px solid #E2E8F0; padding-top: 18px; line-height: 1.4;">
-                            Este é um e-mail gerado automaticamente pelo sistema Mentions On-Demand da Kantar IBOPE Media.<br>
-                            © 2026 Kantar IBOPE Media. Todos os direitos reservados.
+                            Este é um e-mail gerado automaticamente pelo sistema Mentions On-Demand da IBOPE Media.<br>
+                            © 2026 IBOPE Media. Todos os direitos reservados.
                         </p>
                     </div>
                 </div>
@@ -1069,6 +1261,16 @@ def run_pending_tasks(db: Session = Depends(get_db)):
                 
                 task.status = "completed"
                 db.commit()
+                
+            # If all pending tasks for this set are completed, activate the set
+            if db_set:
+                rem_tasks = db.query(models.TaskQueue).filter(
+                    models.TaskQueue.monitoring_set_id == db_set.id,
+                    models.TaskQueue.status == "pending"
+                ).count()
+                if rem_tasks == 0 and db_set.status in ["in_preparation", "processing", "approved"]:
+                    db_set.status = "active"
+                    db.commit()
                 
             processed_count += 1
         except Exception as e:
